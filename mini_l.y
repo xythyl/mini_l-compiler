@@ -1,7 +1,11 @@
 /*
-    CS152 Phase 2
+    CS152 Phase 3
+
     Matthew Lauhakamin
     mlauh001@ucr.edu
+
+    Melinda Pho
+    mpho001@ucr.edu
 */
 
 %{

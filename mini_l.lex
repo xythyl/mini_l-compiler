@@ -1,9 +1,12 @@
 /*
+  CS152 Winter 2017
+  Project Phase 3
+
   Matthew Lauhakamin
   mlauh001@ucr.edu
 
-  CS152 Winter 2017
-  Project Phase 1 
+  Melinda Pho
+  mpho001@ucr.edu
 */
 
 %{
