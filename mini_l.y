@@ -65,75 +65,75 @@
 %%
 
 start: program 
-      ;
+     ;
 
 program: 
-        | function program 
-        ;
+       | function program 
+       ;
 
 function: FUNCTION ident SEMICOLON BEGIN_PARAMS declaration_block END_PARAMS BEGIN_LOCALS declaration_block END_LOCALS BEGIN_BODY statement SEMICOLON statement_block END_BODY 
-            ;
+        ;
 
 declaration_block:  
-                    | declaration SEMICOLON declaration_block 
-                    ;
+                 | declaration SEMICOLON declaration_block 
+                 ;
 
 statement_block: 
-                | statement SEMICOLON statement_block 
-                  ;
+               | statement SEMICOLON statement_block 
+               ;
 
-declaration:  ident comma_id COLON dec_block INTEGER 
-            ;
+declaration: ident comma_id COLON dec_block INTEGER 
+           ;
 
 comma_id:   
-          | COMMA ident comma_id 
-          ;
+        | COMMA ident comma_id 
+        ;
 
 dec_block:  
-          | ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF 
-          ;
+         | ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF 
+         ;
 
-statement:  var ASSIGN expression 
-          | IF bool_exp THEN statement SEMICOLON statement_block else_block ENDIF 
-          | WHILE bool_exp BEGINLOOP statement SEMICOLON statement_block ENDLOOP 
-          | DO BEGINLOOP statement SEMICOLON statement_block ENDLOOP WHILE bool_exp 
-          | READ var var_block 
-          | WRITE var var_block 
-          | CONTINUE 
-          | RETURN expression 
-          ;
+statement: var ASSIGN expression 
+         | IF bool_exp THEN statement SEMICOLON statement_block else_block ENDIF 
+         | WHILE bool_exp BEGINLOOP statement SEMICOLON statement_block ENDLOOP 
+         | DO BEGINLOOP statement SEMICOLON statement_block ENDLOOP WHILE bool_exp 
+         | READ var var_block 
+         | WRITE var var_block 
+         | CONTINUE 
+         | RETURN expression 
+         ;
 
 else_block: 
           | ELSE statement SEMICOLON statement_block 
           ;
 
 var_block:  
-            | COMMA var var_block 
-            ;
+         | COMMA var var_block 
+         ;
 
-bool_exp:   relation_and_expr rel_or 
-          ;
-
-rel_or:  OR relation_and_expr rel_or 
-        | 
+bool_exp: relation_and_expr rel_or 
         ;
 
-relation_and_expr:  relation_expr rel_and 
-                  ;
+rel_or: OR relation_and_expr rel_or 
+      | 
+      ;
 
-rel_and:  AND relation_and_expr 
-        | 
+relation_and_expr: relation_expr rel_and 
+                 ;
+
+rel_and: AND relation_and_expr 
+       | 
+       ;
+
+relation_expr: rel_expr 
+             | NOT rel_expr 
+             ;
+
+rel_expr: expression comp expression 
+        | TRUE 
+        | FALSE 
+        | L_PAREN bool_exp R_PAREN 
         ;
-
-relation_expr:  rel_expr 
-              | NOT rel_expr 
-              ;
-
-rel_expr:   expression comp expression 
-          | TRUE 
-          | FALSE 
-          | L_PAREN bool_exp R_PAREN 
-          ;
 
 comp: EQ 
     | NEQ 
@@ -141,49 +141,49 @@ comp: EQ
     | GT 
     | LTE 
     | GTE 
-     ;
+    ;
 
 expression: multiplicative_expr mult_expr 
           ;
 
-mult_expr:  ADD multiplicative_expr mult_expr 
-          | SUB multiplicative_expr mult_expr 
-          | 
+mult_expr: ADD multiplicative_expr mult_expr 
+         | SUB multiplicative_expr mult_expr 
+         | 
+         ;
+
+multiplicative_expr: term mult_expr_term 
+                   ;
+
+mult_expr_term: MULT term mult_expr_term
+              | DIV term mult_expr_term
+              | MOD term mult_expr_term
+              | 
+              ;
+
+term: SUB term_minus 
+    | term_minus 
+    | ident L_PAREN exp_comma_block R_PAREN 
+    ;
+
+term_minus: var 
+          | number 
+          | L_PAREN expression R_PAREN 
           ;
 
-multiplicative_expr:  term mult_expr_term 
-                    ;
-
-mult_expr_term:   MULT term mult_expr_term
-                | DIV term mult_expr_term
-                | MOD term mult_expr_term
-                | 
-                ;
-
-term:   SUB term_minus 
-     |  term_minus 
-     |  ident L_PAREN exp_comma_block R_PAREN 
-     ;
-
-term_minus:   var 
-           |  number 
-           |  L_PAREN expression R_PAREN 
-           ;
-
 exp_comma_block: expression exp_comma_block2 
-                 |  
-                 ;
+               |  
+               ;
 
 exp_comma_block2: 
                 | COMMA expression exp_comma_block2 
                 ;
 
-var:  ident var_2 
+var: ident var_2 
    ;
 
 var_2:  
-      | L_SQUARE_BRACKET expression R_SQUARE_BRACKET 
-      ;
+     | L_SQUARE_BRACKET expression R_SQUARE_BRACKET 
+     ;
 
 ident: IDENT 
      ;
