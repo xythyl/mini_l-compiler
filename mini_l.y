@@ -9,11 +9,21 @@
 */
 
 %{
+  #include <iostream>
   #include <stdio.h>
   #include <stdlib.h>
+  #include <string>
+  #include <sstream>
+  #include <map>
+  #include <stack>
+  #include <vector>
+
+  using namespace std;
+
   //#define YYDEBUG 1
   //#define YYPRINT(file, type, value) yyprint (file, type value)
   //yydebug = 1;
+
   extern FILE *yyin;
   int yylex(void);
   void yyerror(const char *message);
@@ -54,131 +64,131 @@
 
 %%
 
-start: program {printf("start - > program\n");}
+start: program 
       ;
 
-program: {printf("program -> epsilon\n");} 
-        | function program {printf("program -> function program\n");}
+program: 
+        | function program 
         ;
 
-function: FUNCTION ident SEMICOLON BEGIN_PARAMS declaration_block END_PARAMS BEGIN_LOCALS declaration_block END_LOCALS BEGIN_BODY statement SEMICOLON statement_block END_BODY {printf("function -> FUNCTION ident SEMICOLON BEGIN_PARAMS declaration_block END_PARAMS BEGIN_LOCALS declaration_block END_LOCALS BEGIN_BODY statement SEMICOLON statement_block END_BODY\n");}
+function: FUNCTION ident SEMICOLON BEGIN_PARAMS declaration_block END_PARAMS BEGIN_LOCALS declaration_block END_LOCALS BEGIN_BODY statement SEMICOLON statement_block END_BODY 
             ;
 
-declaration_block:  {printf("declaration_block -> epsilon\n");}
-                    | declaration SEMICOLON declaration_block {printf("declaration_block -> declaration SEMICOLON declaration_block\n");}
+declaration_block:  
+                    | declaration SEMICOLON declaration_block 
                     ;
 
-statement_block: {printf("statement_block -> epsilon\n");} 
-                | statement SEMICOLON statement_block {printf("statement_block -> statement SEMICOLON statement_block\n");}
+statement_block: 
+                | statement SEMICOLON statement_block 
                   ;
 
-declaration:  ident comma_id COLON dec_block INTEGER {printf("declaration -> ident comma_id COLON dec_block INTEGER\n");}
+declaration:  ident comma_id COLON dec_block INTEGER 
             ;
 
-comma_id:   {printf("comma_id -> epsilon\n");}
-          | COMMA ident comma_id {printf("comma_id -> COMMA ident comma_id\n");}
+comma_id:   
+          | COMMA ident comma_id 
           ;
 
-dec_block:  {printf("dec_block -> epsilon\n");}
-          | ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF {printf("dec_block -> ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF\n");}
+dec_block:  
+          | ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF 
           ;
 
-statement:  var ASSIGN expression {printf("statement -> var ASSIGN expression\n");}
-          | IF bool_exp THEN statement SEMICOLON statement_block else_block ENDIF {printf("statement -> IF bool_exp THEN statement SEMICOLON statement_block else_block ENDIF\n");}
-          | WHILE bool_exp BEGINLOOP statement SEMICOLON statement_block ENDLOOP {printf("statement -> WHILE bool_exp BEGINLOOP statement SEMICOLON statement_block ENDLOOP\n");}
-          | DO BEGINLOOP statement SEMICOLON statement_block ENDLOOP WHILE bool_exp {printf("statement -> DO BEGINLOOP statement SEMICOLON statement_block ENDLOOP WHILE bool_exp\n");}
-          | READ var var_block {printf("statement -> READ var var_block\n");}
-          | WRITE var var_block {printf("statement -> WRITE var var_block\n");}
-          | CONTINUE {printf("statement -> CONTINUE\n");}
-          | RETURN expression {printf("statement -> RETURN expression\n");}
+statement:  var ASSIGN expression 
+          | IF bool_exp THEN statement SEMICOLON statement_block else_block ENDIF 
+          | WHILE bool_exp BEGINLOOP statement SEMICOLON statement_block ENDLOOP 
+          | DO BEGINLOOP statement SEMICOLON statement_block ENDLOOP WHILE bool_exp 
+          | READ var var_block 
+          | WRITE var var_block 
+          | CONTINUE 
+          | RETURN expression 
           ;
 
-else_block: {printf("else_block -> epsilon\n");}
-          | ELSE statement SEMICOLON statement_block {printf("else_block -> ELSE statement SEMICOLON statement_block\n");}
+else_block: 
+          | ELSE statement SEMICOLON statement_block 
           ;
 
-var_block:  {printf("var_block -> epsilon\n");}
-            | COMMA var var_block {printf("var_block -> COMMA var var_block\n");}
+var_block:  
+            | COMMA var var_block 
             ;
 
-bool_exp:   relation_and_expr rel_or {printf("bool_expr -> relation_and_expr rel_or\n");} 
+bool_exp:   relation_and_expr rel_or 
           ;
 
-rel_or:  OR relation_and_expr rel_or {printf("rel_or -> OR relation_and_expr rel_or\n");}
-        | {printf("rel_or -> epsilon\n");}
+rel_or:  OR relation_and_expr rel_or 
+        | 
         ;
 
-relation_and_expr:  relation_expr rel_and {printf("relation_and_expr -> relation_expr rel_and\n");}
+relation_and_expr:  relation_expr rel_and 
                   ;
 
-rel_and:  AND relation_and_expr {printf("rel_and -> AND relation_and_expr\n");}
-        | {printf("rel_and -> epsilon\n");}
+rel_and:  AND relation_and_expr 
+        | 
         ;
 
-relation_expr:  rel_expr {printf("relation_expr -> rel_expr\n");}
-              | NOT rel_expr {printf("relation_expr -> NOT rel_expr\n");}
+relation_expr:  rel_expr 
+              | NOT rel_expr 
               ;
 
-rel_expr:   expression comp expression {printf("rel_expr -> expression comp expression\n");}
-          | TRUE {printf("relation_expr -> TRUE\n");}
-          | FALSE {printf("relation_expr -> FALSE\n");}
-          | L_PAREN bool_exp R_PAREN {printf("rel_expr -> L_PAREN bool_exp R_PAREN\n");}
+rel_expr:   expression comp expression 
+          | TRUE 
+          | FALSE 
+          | L_PAREN bool_exp R_PAREN 
           ;
 
-comp: EQ {printf("comp -> EQ\n");} 
-    | NEQ {printf("comp -> NEQ\n");} 
-    | LT {printf("comp -> LT\n");} 
-    | GT {printf("comp -> GT\n");} 
-    | LTE {printf("comp -> LTE\n");} 
-    | GTE {printf("comp -> GTE\n");}
+comp: EQ 
+    | NEQ 
+    | LT 
+    | GT 
+    | LTE 
+    | GTE 
      ;
 
-expression: multiplicative_expr mult_expr {printf("expression -> multiplicative_expr mult_expr\n");}
+expression: multiplicative_expr mult_expr 
           ;
 
-mult_expr:  ADD multiplicative_expr mult_expr {printf("mult_expr -> ADD multiplicative_expr mult_expr\n");}
-          | SUB multiplicative_expr mult_expr {printf("mult_expr -> SUB multiplicative_expr mult_expr\n");}
-          | {printf("mult_expr -> epsilon\n");}
+mult_expr:  ADD multiplicative_expr mult_expr 
+          | SUB multiplicative_expr mult_expr 
+          | 
           ;
 
-multiplicative_expr:  term mult_expr_term {printf("muliplicative_expr -> term mult_expr_term\n");} 
+multiplicative_expr:  term mult_expr_term 
                     ;
 
-mult_expr_term:   MULT term mult_expr_term{printf("mult_expr_term -> MULT term mult_expr_term\n");}
-                | DIV term mult_expr_term{printf("mult_expr_term -> DIV term mult_expr_term\n");}
-                | MOD term mult_expr_term{printf("mult_expr_term -> MOD term mult_expr_term\n");}
-                | {printf("mult_expr_term -> epsilon\n");}
+mult_expr_term:   MULT term mult_expr_term
+                | DIV term mult_expr_term
+                | MOD term mult_expr_term
+                | 
                 ;
 
-term:   SUB term_minus {printf("term -> SUB term_minus\n");} 
-     |  term_minus {printf("term -> term_minus\n");} 
-     |  ident L_PAREN exp_comma_block R_PAREN {printf("term -> ident L_PAREN exp_comma_block R_PAREN\n");}
+term:   SUB term_minus 
+     |  term_minus 
+     |  ident L_PAREN exp_comma_block R_PAREN 
      ;
 
-term_minus:   var {printf("term_minus -> var\n");} 
-           |  number {printf("term_minus -> number\n");} 
-           |  L_PAREN expression R_PAREN {printf("term_minus -> L_PAREN expression R_PAREN\n");} 
+term_minus:   var 
+           |  number 
+           |  L_PAREN expression R_PAREN 
            ;
 
-exp_comma_block: expression exp_comma_block2 {printf("exp_comma_block -> expression exp_comma_block2\n");}
-                 |  {printf("exp_comma_block -> epsilon\n");}
+exp_comma_block: expression exp_comma_block2 
+                 |  
                  ;
 
-exp_comma_block2: {printf("exp_comma_block2 -> epsilon\n");}
-                | COMMA expression exp_comma_block2 {printf("exp_comma_block2 -> COMMA expression exp_comma_block2\n");}
+exp_comma_block2: 
+                | COMMA expression exp_comma_block2 
                 ;
 
-var:  ident var_2 {printf("var -> ident var_2\n");}
+var:  ident var_2 
    ;
 
-var_2:  {printf("var_2 -> epsilon\n");}
-      | L_SQUARE_BRACKET expression R_SQUARE_BRACKET {printf("var_2 -> L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");}
+var_2:  
+      | L_SQUARE_BRACKET expression R_SQUARE_BRACKET 
       ;
 
-ident: IDENT {printf("ident -> IDENT %s\n", $1);}
+ident: IDENT 
      ;
 
-number: NUMBER {printf("number -> NUMBER %d\n", $1);}
+number: NUMBER
       ;
 
 %%
