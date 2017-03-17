@@ -4,4 +4,4 @@ parser: mini_l.lex mini_l.y
 			g++ -o parser y.tab.c lex.yy.c -lfl
 
 clean:
-			rm -f lex.yy.c y.tab.* y.output *.o parser
+			rm -f lex.yy.c y.tab.* y.output *.o parser *.mil

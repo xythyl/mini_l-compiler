@@ -25,25 +25,6 @@
   //#define YYDEBUG 1
   //#define YYPRINT(file, type, value) yyprint (file, type value)
   //yydebug = 1;
-
-  extern FILE *yyin;
-  int yylex(void);
-  void yyerror(const char *message);
-  extern int currLine;
-  extern int currPos;
-
-  string prog_name;
-
-  stack<string> ident_stack;
-  stack<string> var_stack;
-  stack<string> comp_stack;
-  stack<string> index_stack;
-  stack<string> reverse_stack;
-  stack<int> size_stack;
-  stack<int> label_stack;
-  stack<int> loop_stack;
-  stack<int> predicate_stack;
-
   enum symbol_type {INT, INTARRAY};
   enum CONTEXT {READING, WRITING};
 
@@ -58,8 +39,30 @@
     {}
   };
 
+  extern FILE *yyin;
+  int yylex(void);
+  void yyerror(const char *message);
+  extern int currLine;
+  extern int currPos;
+
+  stack<string> prog_name;
+  stack < map < string, Sym > > symbol_table_stack;
+  stack<string> ident_stack;
+  stack<string> var_stack;
+  stack<string> comp_stack;
+  stack<string> index_stack;
+  stack<string> reverse_stack;
+  stack<int> size_stack;
+  stack<int> label_stack;
+  stack<int> loop_stack;
+  stack<int> predicate_stack;
+
+
+  
   void add_symbol(Sym sym);
   void check_symbol(string name);
+  bool find_symbol(string name);
+  void print_declarations();
   map<string, Sym> symbol_table;
 
   ostringstream milhouse;
@@ -68,6 +71,7 @@
 %union{
   char* ident_str;
   int num_val;
+  int size;
 }
 
 %error-verbose
@@ -96,7 +100,9 @@
 %left L_SQUARE_BRACKET R_SQUARE_BRACKET
 %left L_PAREN R_PAREN
 
-%type<ident_str> var
+%type<size> comma_ident
+%type<size> declaration
+%type<ident_str> var term term_minus
 
 %%
 
@@ -107,8 +113,9 @@ program:
        | function program 
        ;
 
-function: FUNCTION IDENT SEMICOLON BEGIN_PARAMS declaration_block END_PARAMS BEGIN_LOCALS declaration_block END_LOCALS BEGIN_BODY statement SEMICOLON statement_block END_BODY {
-            prog_name = string($2);
+function: FUNCTION IDENT {milhouse << "func " << string($2) << endl;} SEMICOLON BEGIN_PARAMS declaration_block END_PARAMS BEGIN_LOCALS declaration_block END_LOCALS {print_declarations();} BEGIN_BODY statement SEMICOLON statement_block END_BODY {
+            milhouse << "endfunc\n";
+            symbol_table.clear();
         }
         ;
 
@@ -120,16 +127,23 @@ statement_block:
                | statement SEMICOLON statement_block 
                ;
 
-declaration: IDENT comma_ident_int COLON INTEGER {
+declaration: IDENT comma_ident COLON INTEGER {
                Sym sym(0,0,$1,INT); 
                add_symbol(sym);
              }
-           | IDENT comma_ident_int_array COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {
+           | IDENT comma_ident COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {
                Sym sym(0,$6,$1,INTARRAY);
                add_symbol(sym);
              }
            ;
 
+comma_ident: 
+            | COMMA IDENT comma_ident {
+               Sym sym(0,0,$2,INT);
+               add_symbol(sym);
+             }
+           ;
+/*
 comma_ident_int:   
         | COMMA IDENT comma_ident_int {
             Sym sym(0,0,$2,INT); 
@@ -139,12 +153,11 @@ comma_ident_int:
 
 comma_ident_int_array:   
         | COMMA IDENT comma_ident_int_array{
-            /* FIX NUMBER */
             Sym sym(0,0,$2,INTARRAY);
             add_symbol(sym);
           }
         ;
-
+*/
 /*
 dec_block:  
          | ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF 
@@ -218,12 +231,12 @@ mult_expr_term: MULT term mult_expr_term
               | 
               ;
 
-term: SUB term_minus 
+term: SUB term_minus {$$ = $2;} 
     | term_minus 
     | IDENT L_PAREN exp_comma_block R_PAREN 
     ;
 
-term_minus: var 
+term_minus: var {$$ = $1;}
           | NUMBER 
           | L_PAREN expression R_PAREN 
           ;
@@ -305,9 +318,29 @@ void add_symbol(Sym s) {
   }
 }
 
+bool find_symbol(string name) {
+  if (symbol_table.find(name) != symbol_table.end()) {
+    return true; 
+  }
+  else {
+    return false;
+  }
+}
+
 void check_symbol(string name) {
   if(symbol_table.find(name)==symbol_table.end()) {
     string error = "Symbol not declared: " + name;
     yyerror(error);
+  }
+}
+
+void print_declarations() {
+  for(map<string,Sym>::iterator it = symbol_table.begin(); it!=symbol_table.end();++it){
+    if (it->second.type == INT) {
+      milhouse << ". " << it->second.name << endl;
+    }
+    else {
+      milhouse << ".[] " << it->second.name << ", " << it->second.size << endl;
+    }
   }
 }
