@@ -70,6 +70,7 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include <string>
+  #include <fstream>
   #include <sstream>
   #include <map>
   #include <stack>
@@ -117,8 +118,10 @@
   void check_symbol(string name);
   map<string, Sym> symbol_table;
 
+  ostringstream milhouse;
+
 /* Line 371 of yacc.c  */
-#line 122 "y.tab.c"
+#line 125 "y.tab.c"
 
 # ifndef YY_NULL
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -211,14 +214,14 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 387 of yacc.c  */
-#line 65 "mini_l.y"
+#line 68 "mini_l.y"
 
   char* ident_str;
   int num_val;
 
 
 /* Line 387 of yacc.c  */
-#line 222 "y.tab.c"
+#line 225 "y.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -246,7 +249,7 @@ int yyparse ();
 /* Copy the second part of user declarations.  */
 
 /* Line 390 of yacc.c  */
-#line 250 "y.tab.c"
+#line 253 "y.tab.c"
 
 #ifdef short
 # undef short
@@ -564,13 +567,13 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,   100,   100,   103,   104,   107,   112,   113,   116,   117,
-     120,   124,   130,   131,   137,   138,   151,   152,   153,   154,
-     155,   156,   157,   158,   161,   162,   165,   166,   169,   172,
-     173,   176,   179,   180,   183,   184,   187,   188,   189,   190,
-     193,   194,   195,   196,   197,   198,   201,   204,   205,   206,
-     209,   212,   213,   214,   215,   218,   219,   220,   223,   224,
-     225,   228,   229,   232,   233,   236,   246
+       0,   103,   103,   106,   107,   110,   115,   116,   119,   120,
+     123,   127,   133,   134,   140,   141,   154,   155,   156,   157,
+     158,   159,   160,   161,   164,   165,   168,   169,   172,   175,
+     176,   179,   182,   183,   186,   187,   190,   191,   192,   193,
+     196,   197,   198,   199,   200,   201,   204,   207,   208,   209,
+     212,   215,   216,   217,   218,   221,   222,   223,   226,   227,
+     228,   231,   232,   235,   236,   239,   249
 };
 #endif
 
@@ -1567,7 +1570,7 @@ yyreduce:
     {
         case 5:
 /* Line 1792 of yacc.c  */
-#line 107 "mini_l.y"
+#line 110 "mini_l.y"
     {
             prog_name = string((yyvsp[(2) - (14)].ident_str));
         }
@@ -1575,7 +1578,7 @@ yyreduce:
 
   case 10:
 /* Line 1792 of yacc.c  */
-#line 120 "mini_l.y"
+#line 123 "mini_l.y"
     {
                Sym sym(0,0,(yyvsp[(1) - (4)].ident_str),INT); 
                add_symbol(sym);
@@ -1584,7 +1587,7 @@ yyreduce:
 
   case 11:
 /* Line 1792 of yacc.c  */
-#line 124 "mini_l.y"
+#line 127 "mini_l.y"
     {
                Sym sym(0,(yyvsp[(6) - (9)].num_val),(yyvsp[(1) - (9)].ident_str),INTARRAY);
                add_symbol(sym);
@@ -1593,7 +1596,7 @@ yyreduce:
 
   case 13:
 /* Line 1792 of yacc.c  */
-#line 131 "mini_l.y"
+#line 134 "mini_l.y"
     {
             Sym sym(0,0,(yyvsp[(2) - (3)].ident_str),INT); 
             add_symbol(sym);
@@ -1602,7 +1605,7 @@ yyreduce:
 
   case 15:
 /* Line 1792 of yacc.c  */
-#line 138 "mini_l.y"
+#line 141 "mini_l.y"
     {
             /* FIX NUMBER */
             Sym sym(0,0,(yyvsp[(2) - (3)].ident_str),INTARRAY);
@@ -1612,7 +1615,7 @@ yyreduce:
 
   case 65:
 /* Line 1792 of yacc.c  */
-#line 236 "mini_l.y"
+#line 239 "mini_l.y"
     {
        check_symbol((yyvsp[(1) - (1)].ident_str));
        if(symbol_table[(yyvsp[(1) - (1)].ident_str)].type == INTARRAY) {
@@ -1627,7 +1630,7 @@ yyreduce:
 
   case 66:
 /* Line 1792 of yacc.c  */
-#line 246 "mini_l.y"
+#line 249 "mini_l.y"
     {
        check_symbol((yyvsp[(1) - (4)].ident_str));
        if(symbol_table[(yyvsp[(1) - (4)].ident_str)].type == INT) {
@@ -1641,7 +1644,7 @@ yyreduce:
 
 
 /* Line 1792 of yacc.c  */
-#line 1645 "y.tab.c"
+#line 1648 "y.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1873,7 +1876,7 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 270 "mini_l.y"
+#line 273 "mini_l.y"
 
 
 int main (int argc, char **argv) {
@@ -1884,6 +1887,10 @@ int main (int argc, char **argv) {
     }
   }
   yyparse();
+  ofstream file;
+  file.open("mil_code.mil");
+  file << milhouse.str();
+  file.close();
   return 0;
 }
 

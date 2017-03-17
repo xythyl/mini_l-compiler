@@ -14,6 +14,7 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include <string>
+  #include <fstream>
   #include <sstream>
   #include <map>
   #include <stack>
@@ -60,6 +61,8 @@
   void add_symbol(Sym sym);
   void check_symbol(string name);
   map<string, Sym> symbol_table;
+
+  ostringstream milhouse;
 %}
 
 %union{
@@ -277,6 +280,10 @@ int main (int argc, char **argv) {
     }
   }
   yyparse();
+  ofstream file;
+  file.open("mil_code.mil");
+  file << milhouse.str();
+  file.close();
   return 0;
 }
 
