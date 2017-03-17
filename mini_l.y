@@ -29,6 +29,19 @@
   void yyerror(const char *message);
   extern int currLine;
   extern int currPos;
+
+  string prog_name;
+
+  map<string, int> declarations;
+  stack<string> ident_stack;
+  stack<string> var_stack;
+  stack<string> comp_stack;
+  stack<string> index_stack;
+  stack<string> reverse_stack;
+  stack<int> size_stack;
+  stack<int> label_stack;
+  stack<int> loop_stack;
+  stack<int> predicate_stack;
 %}
 
 %union{
@@ -71,7 +84,9 @@ program:
        | function program 
        ;
 
-function: FUNCTION ident SEMICOLON BEGIN_PARAMS declaration_block END_PARAMS BEGIN_LOCALS declaration_block END_LOCALS BEGIN_BODY statement SEMICOLON statement_block END_BODY 
+function: FUNCTION IDENT SEMICOLON BEGIN_PARAMS declaration_block END_PARAMS BEGIN_LOCALS declaration_block END_LOCALS BEGIN_BODY statement SEMICOLON statement_block END_BODY {
+            prog_name = string($2);
+        }
         ;
 
 declaration_block:  
@@ -82,15 +97,15 @@ statement_block:
                | statement SEMICOLON statement_block 
                ;
 
-declaration: ident comma_id COLON dec_block INTEGER 
+declaration: IDENT comma_id COLON dec_block INTEGER 
            ;
 
 comma_id:   
-        | COMMA ident comma_id 
+        | COMMA IDENT comma_id 
         ;
 
 dec_block:  
-         | ARRAY L_SQUARE_BRACKET number R_SQUARE_BRACKET OF 
+         | ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF 
          ;
 
 statement: var ASSIGN expression 
@@ -162,11 +177,11 @@ mult_expr_term: MULT term mult_expr_term
 
 term: SUB term_minus 
     | term_minus 
-    | ident L_PAREN exp_comma_block R_PAREN 
+    | IDENT L_PAREN exp_comma_block R_PAREN 
     ;
 
 term_minus: var 
-          | number 
+          | NUMBER 
           | L_PAREN expression R_PAREN 
           ;
 
@@ -178,18 +193,20 @@ exp_comma_block2:
                 | COMMA expression exp_comma_block2 
                 ;
 
-var: ident var_2 
+var: IDENT var_2 
    ;
 
 var_2:  
      | L_SQUARE_BRACKET expression R_SQUARE_BRACKET 
      ;
 
+/*
 ident: IDENT 
      ;
 
 number: NUMBER
       ;
+*/
 
 %%
 
