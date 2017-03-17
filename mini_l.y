@@ -63,9 +63,12 @@
   void check_symbol(string name);
   bool find_symbol(string name);
   void print_declarations();
+  string make_temp();
   map<string, Sym> symbol_table;
 
   ostringstream milhouse;
+
+  int temp_cnt = 0;
 %}
 
 %union{
@@ -164,7 +167,7 @@ dec_block:
          ;
 */
 
-statement: var ASSIGN expression 
+statement: var ASSIGN expression {milhouse << make_temp() << endl;}
          | IF bool_exp THEN statement SEMICOLON statement_block else_block ENDIF 
          | WHILE bool_exp BEGINLOOP statement SEMICOLON statement_block ENDLOOP 
          | DO BEGINLOOP statement SEMICOLON statement_block ENDLOOP WHILE bool_exp 
@@ -343,4 +346,11 @@ void print_declarations() {
       milhouse << ".[] " << it->second.name << ", " << it->second.size << endl;
     }
   }
+}
+
+string make_temp() {
+  stringstream ss;
+  ss << temp_cnt++;
+  string temp = "__temp__" + ss.str();
+  return temp;
 }
