@@ -32,7 +32,6 @@
 
   string prog_name;
 
-  map<string, int> declarations;
   stack<string> ident_stack;
   stack<string> var_stack;
   stack<string> comp_stack;
@@ -42,6 +41,18 @@
   stack<int> label_stack;
   stack<int> loop_stack;
   stack<int> predicate_stack;
+
+  enum symbol_type {INT, INTARRAY};
+  enum CONTEXT {READING, WRITING};
+
+  struct Sym {
+    int val;
+    int size;
+    string name;
+    symbol_type type; 
+  };
+
+  map<string, Sym> symbol_table;
 %}
 
 %union{
@@ -97,12 +108,20 @@ statement_block:
                | statement SEMICOLON statement_block 
                ;
 
-declaration: IDENT comma_id COLON INTEGER 
-           | IDENT comma_id COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER
+declaration: IDENT comma_ident_int COLON INTEGER {
+               
+           }
+           | IDENT comma_ident_int_array COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {
+  
+           }
            ;
 
-comma_id:   
-        | COMMA IDENT comma_id 
+comma_ident_int:   
+        | COMMA IDENT comma_ident_int 
+        ;
+
+comma_ident_int_array:   
+        | COMMA IDENT comma_ident_int_array
         ;
 
 /*
