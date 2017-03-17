@@ -103,9 +103,9 @@
 %left L_SQUARE_BRACKET R_SQUARE_BRACKET
 %left L_PAREN R_PAREN
 
-%type<size> comma_ident
-%type<size> declaration
-%type<ident_str> var term term_minus
+%type<ident_str> comma_ident
+%type<ident_str> declaration
+%type<ident_str> var term term_minus expression
 
 %%
 
@@ -167,7 +167,32 @@ dec_block:
          ;
 */
 
-statement: var ASSIGN expression {milhouse << make_temp() << endl;}
+statement: var ASSIGN expression {
+             string a, b, c;
+             check_symbol($1);
+             if (symbol_table[$1].type == INT) { //Check if var is an int
+               /* if (symbol_table[$3].type == INT) { //Check if expression is an int   
+                 a = make_temp();
+                 milhouse << ". " << a << endl;
+                 milhouse << "= " << a << ", " << const_cast<char*>($3) << endl;
+                 milhouse << "= " << const_cast<char*>($1) << ", " << a << endl;
+                 
+               }
+               else {
+
+               }
+               */
+             }
+             else { //Check if var is an int array
+               /*if (symbol_table[$3].type == INT) { //Check if expression is an int
+                 
+               }
+               else {
+
+               }
+               */
+             } 
+           }
          | IF bool_exp THEN statement SEMICOLON statement_block else_block ENDIF 
          | WHILE bool_exp BEGINLOOP statement SEMICOLON statement_block ENDLOOP 
          | DO BEGINLOOP statement SEMICOLON statement_block ENDLOOP WHILE bool_exp 
@@ -312,11 +337,11 @@ void yyerror(string message) {
 }
 
 void add_symbol(Sym s) {
-  if(symbol_table.find(s.name) == symbol_table.end()) {
+  if (symbol_table.find(s.name) == symbol_table.end()) {
     symbol_table[s.name] = s;
   }
   else {
-    string error = "Symbol already declared: " + s.name;
+    string error = "Symbold already declared: " + s.name;
     yyerror(error);
   }
 }
@@ -331,7 +356,7 @@ bool find_symbol(string name) {
 }
 
 void check_symbol(string name) {
-  if(symbol_table.find(name)==symbol_table.end()) {
+  if(symbol_table.find(name) == symbol_table.end()) {
     string error = "Symbol not declared: " + name;
     yyerror(error);
   }

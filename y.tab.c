@@ -575,12 +575,12 @@ static const yytype_int8 yyrhs[] =
 static const yytype_uint16 yyrline[] =
 {
        0,   112,   112,   115,   116,   119,   119,   119,   125,   126,
-     129,   130,   133,   137,   143,   144,   170,   171,   172,   173,
-     174,   175,   176,   177,   180,   181,   184,   185,   188,   191,
-     192,   195,   198,   199,   202,   203,   206,   207,   208,   209,
-     212,   213,   214,   215,   216,   217,   220,   223,   224,   225,
-     228,   231,   232,   233,   234,   237,   238,   239,   242,   243,
-     244,   247,   248,   251,   252,   255,   265
+     129,   130,   133,   137,   143,   144,   170,   196,   197,   198,
+     199,   200,   201,   202,   205,   206,   209,   210,   213,   216,
+     217,   220,   223,   224,   227,   228,   231,   232,   233,   234,
+     237,   238,   239,   240,   241,   242,   245,   248,   249,   250,
+     253,   256,   257,   258,   259,   262,   263,   264,   267,   268,
+     269,   272,   273,   276,   277,   280,   290
 };
 #endif
 
@@ -1622,24 +1622,49 @@ yyreduce:
   case 16:
 /* Line 1792 of yacc.c  */
 #line 170 "mini_l.y"
-    {milhouse << make_temp() << endl;}
+    {
+             string a, b, c;
+             check_symbol((yyvsp[(1) - (3)].ident_str));
+             if (symbol_table[(yyvsp[(1) - (3)].ident_str)].type == INT) { //Check if var is an int
+               /* if (symbol_table[$3].type == INT) { //Check if expression is an int   
+                 a = make_temp();
+                 milhouse << ". " << a << endl;
+                 milhouse << "= " << a << ", " << const_cast<char*>($3) << endl;
+                 milhouse << "= " << const_cast<char*>($1) << ", " << a << endl;
+                 
+               }
+               else {
+
+               }
+               */
+             }
+             else { //Check if var is an int array
+               /*if (symbol_table[$3].type == INT) { //Check if expression is an int
+                 
+               }
+               else {
+
+               }
+               */
+             } 
+           }
     break;
 
   case 55:
 /* Line 1792 of yacc.c  */
-#line 237 "mini_l.y"
+#line 262 "mini_l.y"
     {(yyval.ident_str) = (yyvsp[(2) - (2)].ident_str);}
     break;
 
   case 58:
 /* Line 1792 of yacc.c  */
-#line 242 "mini_l.y"
+#line 267 "mini_l.y"
     {(yyval.ident_str) = (yyvsp[(1) - (1)].ident_str);}
     break;
 
   case 65:
 /* Line 1792 of yacc.c  */
-#line 255 "mini_l.y"
+#line 280 "mini_l.y"
     {
        check_symbol((yyvsp[(1) - (1)].ident_str));
        if(symbol_table[(yyvsp[(1) - (1)].ident_str)].type == INTARRAY) {
@@ -1654,7 +1679,7 @@ yyreduce:
 
   case 66:
 /* Line 1792 of yacc.c  */
-#line 265 "mini_l.y"
+#line 290 "mini_l.y"
     {
        check_symbol((yyvsp[(1) - (4)].ident_str));
        if(symbol_table[(yyvsp[(1) - (4)].ident_str)].type == INT) {
@@ -1668,7 +1693,7 @@ yyreduce:
 
 
 /* Line 1792 of yacc.c  */
-#line 1672 "y.tab.c"
+#line 1697 "y.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1900,7 +1925,7 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 289 "mini_l.y"
+#line 314 "mini_l.y"
 
 
 int main (int argc, char **argv) {
@@ -1927,11 +1952,11 @@ void yyerror(string message) {
 }
 
 void add_symbol(Sym s) {
-  if(symbol_table.find(s.name) == symbol_table.end()) {
+  if (symbol_table.find(s.name) == symbol_table.end()) {
     symbol_table[s.name] = s;
   }
   else {
-    string error = "Symbol already declared: " + s.name;
+    string error = "Symbold already declared: " + s.name;
     yyerror(error);
   }
 }
@@ -1946,7 +1971,7 @@ bool find_symbol(string name) {
 }
 
 void check_symbol(string name) {
-  if(symbol_table.find(name)==symbol_table.end()) {
+  if(symbol_table.find(name) == symbol_table.end()) {
     string error = "Symbol not declared: " + name;
     yyerror(error);
   }
