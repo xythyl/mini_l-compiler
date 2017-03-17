@@ -9,6 +9,7 @@
 */
 
 %{
+  #define YY_NO_UNPUT
   #include <iostream>
   #include <stdio.h>
   #include <stdlib.h>
@@ -50,8 +51,14 @@
     int size;
     string name;
     symbol_type type; 
+    Sym():val(0),size(0),name(),type() {}
+    Sym(int v, int s, string n, symbol_type t) 
+    :val(v), size(s), name(n), type(t)
+    {}
   };
 
+  void add_symbol(Sym sym);
+  void check_symbol(string name);
   map<string, Sym> symbol_table;
 %}
 
@@ -86,6 +93,8 @@
 %left L_SQUARE_BRACKET R_SQUARE_BRACKET
 %left L_PAREN R_PAREN
 
+%type<ident_str> var
+
 %%
 
 start: program 
@@ -109,19 +118,28 @@ statement_block:
                ;
 
 declaration: IDENT comma_ident_int COLON INTEGER {
-               
-           }
+               Sym sym(0,0,$1,INT); 
+               add_symbol(sym);
+             }
            | IDENT comma_ident_int_array COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {
-  
-           }
+               Sym sym(0,$6,$1,INTARRAY);
+               add_symbol(sym);
+             }
            ;
 
 comma_ident_int:   
-        | COMMA IDENT comma_ident_int 
-        ;
+        | COMMA IDENT comma_ident_int {
+            Sym sym(0,0,$2,INT); 
+            add_symbol(sym);
+          }
+       ;
 
 comma_ident_int_array:   
-        | COMMA IDENT comma_ident_int_array
+        | COMMA IDENT comma_ident_int_array{
+            /* FIX NUMBER */
+            Sym sym(0,0,$2,INTARRAY);
+            add_symbol(sym);
+          }
         ;
 
 /*
@@ -215,13 +233,32 @@ exp_comma_block2:
                 | COMMA expression exp_comma_block2 
                 ;
 
-var: IDENT var_2 
+var: IDENT {
+       check_symbol($1);
+       if(symbol_table[$1].type == INTARRAY) {
+         yyerror("Symbol is of type int array");
+       }
+       else {
+         $$ = $1;
+         var_stack.push($1);
+       }
+     }
+   | IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
+       check_symbol($1);
+       if(symbol_table[$1].type == INT) {
+         yyerror("Symbol is of type int");
+       }
+       else {
+         $$ = $1;
+       }
+   }
+   /* IDENT var_2 */
    ;
-
+/*
 var_2:  
      | L_SQUARE_BRACKET expression R_SQUARE_BRACKET 
      ;
-
+*/
 /*
 ident: IDENT 
      ;
@@ -245,4 +282,25 @@ int main (int argc, char **argv) {
 
 void yyerror(const char *message) {
   printf("Syntax error on line %d: \"%s\" \n", currLine, message);
+}
+
+void yyerror(string message) {
+  cout << "Syntax error on line " << currLine << ": " << message << endl;
+}
+
+void add_symbol(Sym s) {
+  if(symbol_table.find(s.name) == symbol_table.end()) {
+    symbol_table[s.name] = s;
+  }
+  else {
+    string error = "Symbol already declared: " + s.name;
+    yyerror(error);
+  }
+}
+
+void check_symbol(string name) {
+  if(symbol_table.find(name)==symbol_table.end()) {
+    string error = "Symbol not declared: " + name;
+    yyerror(error);
+  }
 }
