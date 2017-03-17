@@ -97,16 +97,19 @@ statement_block:
                | statement SEMICOLON statement_block 
                ;
 
-declaration: IDENT comma_id COLON dec_block INTEGER 
+declaration: IDENT comma_id COLON INTEGER 
+           | IDENT comma_id COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER
            ;
 
 comma_id:   
         | COMMA IDENT comma_id 
         ;
 
+/*
 dec_block:  
          | ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF 
          ;
+*/
 
 statement: var ASSIGN expression 
          | IF bool_exp THEN statement SEMICOLON statement_block else_block ENDIF 
