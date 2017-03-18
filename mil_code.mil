@@ -11,33 +11,38 @@ func main
 . __temp__3
 = __temp__3, __temp__2
 = n, __temp__3
+. __temp__4
+= __temp__4, k
 . __temp__5
 = __temp__5, k
-. __temp__6
-= __temp__6, k
-[]= t, __temp__5, __temp__6
-. __temp__8
-= __temp__8, k
-= k, __temp__8
+[]= t, __temp__4, __temp__5
+. __temp__7
+= __temp__7, k
+= k, __temp__7
+. __temp__13
+= __temp__13, i
 . __temp__14
 = __temp__14, i
-. __temp__15
-= __temp__15, i
-[]= t, __temp__14, __temp__15
+[]= t, __temp__13, __temp__14
+. __temp__16
+= __temp__16, j
 . __temp__17
 = __temp__17, j
-. __temp__18
-= __temp__18, j
-[]= t, __temp__17, __temp__18
+[]= t, __temp__16, __temp__17
 . __temp__19
-= __temp__19, j
+= __temp__19, 9
 . __temp__20
-= __temp__20, k
-[]= t, __temp__19, __temp__20
-. __temp__23
-= __temp__23, __temp__21
-= k, __temp__23
+=[] __temp__20, t__temp__19
+= k, __temp__20
+. __temp__21
+= __temp__21, j
+. __temp__22
+= __temp__22, k
+[]= t, __temp__21, __temp__22
 . __temp__25
-= __temp__25, i
-= i, __temp__25
+= __temp__25, __temp__23
+= k, __temp__25
+. __temp__27
+= __temp__27, i
+= i, __temp__27
 endfunc

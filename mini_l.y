@@ -125,6 +125,7 @@
 //%type<ident_str> declaration
 
 %type<attr> var term_minus expression term declaration statement
+%type<ident_str> comp
 
 %%
 
@@ -214,7 +215,13 @@ statement: var ASSIGN expression {
                  milhouse << "= " << const_cast<char*>($1.name) << ", " << a << endl;
                }
                else { //if lhs = int and rhs = int array
-
+                 a = make_temp();
+                 b = make_temp();
+                 milhouse << ". " << a << endl;
+                 milhouse << "= " << a << ", " << const_cast<char*>($3.index) << endl;  
+                 milhouse << ". " << b << endl;
+                 milhouse << "=[] " << b << ", " << const_cast<char*>($3.name)  << a << endl;
+                 milhouse << "= " << const_cast<char*>($1.name) << ", " << b << endl;
                }
                
              }
@@ -228,8 +235,8 @@ statement: var ASSIGN expression {
                  milhouse << "= " << b << ", " << const_cast<char*>($3.name) << endl;              
                  milhouse << "[]= " << const_cast<char*>($1.name) << ", " << a << ", " << b << endl;
                }
-               else {
-
+               else { // int array = int array
+                  
                }
             
              } 
@@ -277,12 +284,12 @@ rel_expr: expression comp expression
         | L_PAREN bool_exp R_PAREN 
         ;
 
-comp: EQ 
-    | NEQ 
-    | LT 
-    | GT 
-    | LTE 
-    | GTE 
+comp: EQ { $$ = const_cast<char*>("=="); } 
+    | NEQ { $$ = const_cast<char*>("!="); }
+    | LT { $$ = const_cast<char*>("<"); }
+    | GT { $$ = const_cast<char*>(">"); }
+    | LTE { $$ = const_cast<char*>("<="); }
+    | GTE { $$ = const_cast<char*>(">="); }
     ;
 
 expression: multiplicative_expr mult_expr 
@@ -303,7 +310,9 @@ mult_expr_term: MULT term mult_expr_term
               ;
 
 term: SUB term_minus {
-      $$.val = $2.val;
+      // making it negative
+      // $$.val = $2.val;
+      $$.val = $2.val*-1;
       strcpy($$.name,$2.name);
     } 
     | term_minus {
