@@ -78,7 +78,7 @@
   ostringstream milhouse;
 
   int temp_cnt = 0;
-
+  int label_cnt = 0;
   
 %}
 
@@ -244,7 +244,9 @@ statement: var ASSIGN expression {
          | IF bool_exp THEN statement SEMICOLON statement_block else_block ENDIF 
          | WHILE bool_exp BEGINLOOP statement SEMICOLON statement_block ENDLOOP 
          | DO BEGINLOOP statement SEMICOLON statement_block ENDLOOP WHILE bool_exp 
-         | READ var var_block 
+         | READ var var_block {
+              
+            } 
          | WRITE var var_block 
          | CONTINUE 
          | RETURN expression {
