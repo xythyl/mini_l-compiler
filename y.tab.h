@@ -110,6 +110,7 @@ typedef union YYSTYPE
 
   struct attributes {
     char name[255];
+    char index[255];
     int type; //0 = int, 1 = int array, 2 = function
     int val;
     int size_attr;
@@ -117,7 +118,7 @@ typedef union YYSTYPE
 
 
 /* Line 2058 of yacc.c  */
-#line 121 "y.tab.h"
+#line 122 "y.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

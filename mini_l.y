@@ -88,6 +88,7 @@
 
   struct attributes {
     char name[255];
+    char index[255];
     int type; //0 = int, 1 = int array, 2 = function
     int val;
     int size_attr;
@@ -222,7 +223,7 @@ statement: var ASSIGN expression {
                  a = make_temp();
                  b = make_temp();
                  milhouse << ". " << a << endl; 
-                 milhouse << "= " << a << ", " << const_cast<char*>($1.name) << endl;
+                 milhouse << "= " << a << ", " << const_cast<char*>($1.index) << endl;
                  milhouse << ". " << b << endl; 
                  milhouse << "= " << b << ", " << const_cast<char*>($3.name) << endl;              
                  milhouse << "[]= " << const_cast<char*>($1.name) << ", " << a << ", " << b << endl;
@@ -318,6 +319,7 @@ term_minus: var {
             }
           | NUMBER {
               $$.val = $1;
+              $$.type = 3;
               //$$.name = make_temp().c_str();
               strcpy($$.name, make_temp().c_str());
             }
@@ -354,25 +356,16 @@ var: IDENT {
          strcpy($$.name, $1);
          $$.type = 1;
          $$.val = symbol_table[$1].val;
-         //$$.size = $3.size;
+         if ($3.type == 3) { //if type is a number
+           sprintf($$.index, "%d", $3.val);
+         }
+         else { //else type is an int, intarray, or function
+           strcpy($$.index, $3.name);
+         }
        }
    }
    /* IDENT var_2 */
    ;
-/*
-var_2:  
-| L_SQUARE_BRACKET expression R_SQUARE_BRACKET  {
-  
-}
-     ;
-*/
-/*
-ident: IDENT 
-     ;
-
-number: NUMBER
-      ;
-*/
 
 %%
 
@@ -442,24 +435,4 @@ string make_temp() {
   string temp = "__temp__" + ss.str();
   return temp;
 }
-/*
-char* make_temp2() {
-  char k[255];
-  strcopy(k, "__temp__");
-  strcat(k, temp_cnt++.c_str());
-  return k;
-  
-  char* t = const_cast<char*>("__temp__");
-  char* k;
-  itoa(temp_cnt++,k,10);
-  strcat(t,k);
 
-  stringstream ss;
-  ss << temp_cnt++;
-  string temp = ss.str();
-  char* k = (char*) temp.c_str();
-  char* t = const_cast<char*>("__temp__");
-  strcat(t, k);
-  return t;
-}
-*/
