@@ -103,15 +103,21 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 74 "mini_l.y"
+#line 85 "mini_l.y"
 
   char* ident_str;
   int num_val;
-  int size;
+
+  struct attributes {
+    char name[255];
+    int type; //0 = int, 1 = int array, 2 = function
+    int val;
+    int size_attr;
+  } attr;
 
 
 /* Line 2058 of yacc.c  */
-#line 115 "y.tab.h"
+#line 121 "y.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

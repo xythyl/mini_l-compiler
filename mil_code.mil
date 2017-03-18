@@ -5,4 +5,39 @@ func main
 . n
 . q
 .[] t, 20
+. __temp__1
+= __temp__1, __temp__0
+= k, __temp__1
+. __temp__3
+= __temp__3, __temp__2
+= n, __temp__3
+. __temp__4
+= __temp__4, t
+. __temp__5
+= __temp__5, k
+[]= t, __temp__4, __temp__5
+. __temp__7
+= __temp__7, k
+= k, __temp__7
+. __temp__13
+= __temp__13, t
+. __temp__14
+= __temp__14, i
+[]= t, __temp__13, __temp__14
+. __temp__16
+= __temp__16, t
+. __temp__17
+= __temp__17, j
+[]= t, __temp__16, __temp__17
+. __temp__18
+= __temp__18, t
+. __temp__19
+= __temp__19, k
+[]= t, __temp__18, __temp__19
+. __temp__22
+= __temp__22, __temp__20
+= k, __temp__22
+. __temp__24
+= __temp__24, i
+= i, __temp__24
 endfunc

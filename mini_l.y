@@ -14,6 +14,7 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include <string>
+  #include <string.h>
   #include <fstream>
   #include <sstream>
   #include <map>
@@ -25,7 +26,7 @@
   //#define YYDEBUG 1
   //#define YYPRINT(file, type, value) yyprint (file, type value)
   //yydebug = 1;
-  enum symbol_type {INT, INTARRAY};
+  enum symbol_type {INT, INTARRAY, FUNC};
   enum CONTEXT {READING, WRITING};
 
   struct Sym {
@@ -37,6 +38,12 @@
     Sym(int v, int s, string n, symbol_type t) 
     :val(v), size(s), name(n), type(t)
     {}
+  };
+
+  struct func {
+    string name;
+    symbol_type type;
+
   };
 
   extern FILE *yyin;
@@ -57,24 +64,34 @@
   stack<int> loop_stack;
   stack<int> predicate_stack;
 
-
+  vector<string> functions;
   
   void add_symbol(Sym sym);
   void check_symbol(string name);
   bool find_symbol(string name);
   void print_declarations();
   string make_temp();
+  char* make_temp2();
   map<string, Sym> symbol_table;
+  map<string, func> func_table;
 
   ostringstream milhouse;
 
   int temp_cnt = 0;
+
+  
 %}
 
 %union{
   char* ident_str;
   int num_val;
-  int size;
+
+  struct attributes {
+    char name[255];
+    int type; //0 = int, 1 = int array, 2 = function
+    int val;
+    int size_attr;
+  } attr;
 }
 
 %error-verbose
@@ -103,9 +120,10 @@
 %left L_SQUARE_BRACKET R_SQUARE_BRACKET
 %left L_PAREN R_PAREN
 
-%type<ident_str> comma_ident
-%type<ident_str> declaration
-%type<ident_str> var term term_minus expression
+//%type<ident_str> comma_ident
+//%type<ident_str> declaration
+
+%type<attr> var term_minus expression term declaration statement
 
 %%
 
@@ -116,7 +134,7 @@ program:
        | function program 
        ;
 
-function: FUNCTION IDENT {milhouse << "func " << string($2) << endl;} SEMICOLON BEGIN_PARAMS declaration_block END_PARAMS BEGIN_LOCALS declaration_block END_LOCALS {print_declarations();} BEGIN_BODY statement SEMICOLON statement_block END_BODY {
+function: FUNCTION IDENT {milhouse << "func " << string($2) << endl;} SEMICOLON BEGIN_PARAMS declaration_block END_PARAMS  BEGIN_LOCALS declaration_block END_LOCALS {print_declarations();} BEGIN_BODY statement SEMICOLON statement_block END_BODY {
             milhouse << "endfunc\n";
             symbol_table.clear();
         }
@@ -129,7 +147,6 @@ declaration_block:
 statement_block: 
                | statement SEMICOLON statement_block 
                ;
-
 declaration: IDENT comma_ident COLON INTEGER {
                Sym sym(0,0,$1,INT); 
                add_symbol(sym);
@@ -146,21 +163,39 @@ comma_ident:
                add_symbol(sym);
              }
            ;
+
 /*
-comma_ident_int:   
-        | COMMA IDENT comma_ident_int {
+declaration: IDENT comma_int {
+               Sym sym(0,0,$1,INT); 
+               add_symbol(sym);
+             }
+           | IDENT comma_array L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {
+               Sym sym(0,$4,$1,INTARRAY);
+               add_symbol(sym);
+             }
+           ;
+
+
+comma_array: comma_array_loop COLON ARRAY
+           ;
+
+comma_int: comma_int_loop COLON INTEGER
+         ;
+
+comma_int_loop:   
+        | COMMA IDENT comma_int_loop {
             Sym sym(0,0,$2,INT); 
             add_symbol(sym);
           }
        ;
 
-comma_ident_int_array:   
-        | COMMA IDENT comma_ident_int_array{
+comma_array_loop:   
+        | COMMA IDENT comma_array_loop{
             Sym sym(0,0,$2,INTARRAY);
             add_symbol(sym);
           }
         ;
-*/
+        */
 /*
 dec_block:  
          | ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF 
@@ -169,28 +204,33 @@ dec_block:
 
 statement: var ASSIGN expression {
              string a, b, c;
-             check_symbol($1);
-             if (symbol_table[$1].type == INT) { //Check if var is an int
-               /* if (symbol_table[$3].type == INT) { //Check if expression is an int   
+             check_symbol($1.name);
+             if (symbol_table[($1.name)].type == INT) { //Check if var is an int
+               if (symbol_table[$3.name].type == INT) { //Check if expression is an int   
                  a = make_temp();
                  milhouse << ". " << a << endl;
-                 milhouse << "= " << a << ", " << const_cast<char*>($3) << endl;
-                 milhouse << "= " << const_cast<char*>($1) << ", " << a << endl;
-                 
+                 milhouse << "= " << a << ", " << const_cast<char*>($3.name) << endl;
+                 milhouse << "= " << const_cast<char*>($1.name) << ", " << a << endl;
                }
-               else {
+               else { //if lhs = int and rhs = int array
 
                }
-               */
+               
              }
              else { //Check if var is an int array
-               /*if (symbol_table[$3].type == INT) { //Check if expression is an int
-                 
+               if (symbol_table[$3.name].type == INT) { //Check if expression is an int
+                 a = make_temp();
+                 b = make_temp();
+                 milhouse << ". " << a << endl; 
+                 milhouse << "= " << a << ", " << const_cast<char*>($1.name) << endl;
+                 milhouse << ". " << b << endl; 
+                 milhouse << "= " << b << ", " << const_cast<char*>($3.name) << endl;              
+                 milhouse << "[]= " << const_cast<char*>($1.name) << ", " << a << ", " << b << endl;
                }
                else {
 
                }
-               */
+            
              } 
            }
          | IF bool_exp THEN statement SEMICOLON statement_block else_block ENDIF 
@@ -199,7 +239,9 @@ statement: var ASSIGN expression {
          | READ var var_block 
          | WRITE var var_block 
          | CONTINUE 
-         | RETURN expression 
+         | RETURN expression {
+             $$.val = $2.val;
+           }
          ;
 
 else_block: 
@@ -259,14 +301,29 @@ mult_expr_term: MULT term mult_expr_term
               | 
               ;
 
-term: SUB term_minus {$$ = $2;} 
-    | term_minus 
+term: SUB term_minus {
+      $$.val = $2.val;
+      strcpy($$.name,$2.name);
+    } 
+    | term_minus {
+      $$.val = $1.val;
+      strcpy($$.name, $1.name);
+    } 
     | IDENT L_PAREN exp_comma_block R_PAREN 
     ;
 
-term_minus: var {$$ = $1;}
-          | NUMBER 
-          | L_PAREN expression R_PAREN 
+term_minus: var {
+              $$.val = $1.val;
+              strcpy($$.name,$1.name);
+            }
+          | NUMBER {
+              $$.val = $1;
+              //$$.name = make_temp().c_str();
+              strcpy($$.name, make_temp().c_str());
+            }
+          | L_PAREN expression R_PAREN {
+              strcpy($$.name, $2.name);
+            }
           ;
 
 exp_comma_block: expression exp_comma_block2 
@@ -283,8 +340,9 @@ var: IDENT {
          yyerror("Symbol is of type int array");
        }
        else {
-         $$ = $1;
-         var_stack.push($1);
+         strcpy($$.name,$1);
+         $$.type = 0;
+         $$.val = symbol_table[$1].val;
        }
      }
    | IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
@@ -293,14 +351,19 @@ var: IDENT {
          yyerror("Symbol is of type int");
        }
        else {
-         $$ = $1;
+         strcpy($$.name, $1);
+         $$.type = 1;
+         $$.val = symbol_table[$1].val;
+         //$$.size = $3.size;
        }
    }
    /* IDENT var_2 */
    ;
 /*
 var_2:  
-     | L_SQUARE_BRACKET expression R_SQUARE_BRACKET 
+| L_SQUARE_BRACKET expression R_SQUARE_BRACKET  {
+  
+}
      ;
 */
 /*
@@ -341,7 +404,7 @@ void add_symbol(Sym s) {
     symbol_table[s.name] = s;
   }
   else {
-    string error = "Symbold already declared: " + s.name;
+    string error = "Symbol already declared: " + s.name;
     yyerror(error);
   }
 }
@@ -379,3 +442,24 @@ string make_temp() {
   string temp = "__temp__" + ss.str();
   return temp;
 }
+/*
+char* make_temp2() {
+  char k[255];
+  strcopy(k, "__temp__");
+  strcat(k, temp_cnt++.c_str());
+  return k;
+  
+  char* t = const_cast<char*>("__temp__");
+  char* k;
+  itoa(temp_cnt++,k,10);
+  strcat(t,k);
+
+  stringstream ss;
+  ss << temp_cnt++;
+  string temp = ss.str();
+  char* k = (char*) temp.c_str();
+  char* t = const_cast<char*>("__temp__");
+  strcat(t, k);
+  return t;
+}
+*/

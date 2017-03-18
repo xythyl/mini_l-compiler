@@ -70,6 +70,7 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include <string>
+  #include <string.h>
   #include <fstream>
   #include <sstream>
   #include <map>
@@ -81,7 +82,7 @@
   //#define YYDEBUG 1
   //#define YYPRINT(file, type, value) yyprint (file, type value)
   //yydebug = 1;
-  enum symbol_type {INT, INTARRAY};
+  enum symbol_type {INT, INTARRAY, FUNC};
   enum CONTEXT {READING, WRITING};
 
   struct Sym {
@@ -93,6 +94,12 @@
     Sym(int v, int s, string n, symbol_type t) 
     :val(v), size(s), name(n), type(t)
     {}
+  };
+
+  struct func {
+    string name;
+    symbol_type type;
+
   };
 
   extern FILE *yyin;
@@ -113,21 +120,25 @@
   stack<int> loop_stack;
   stack<int> predicate_stack;
 
-
+  vector<string> functions;
   
   void add_symbol(Sym sym);
   void check_symbol(string name);
   bool find_symbol(string name);
   void print_declarations();
   string make_temp();
+  char* make_temp2();
   map<string, Sym> symbol_table;
+  map<string, func> func_table;
 
   ostringstream milhouse;
 
   int temp_cnt = 0;
 
+  
+
 /* Line 371 of yacc.c  */
-#line 131 "y.tab.c"
+#line 142 "y.tab.c"
 
 # ifndef YY_NULL
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -220,15 +231,21 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 387 of yacc.c  */
-#line 74 "mini_l.y"
+#line 85 "mini_l.y"
 
   char* ident_str;
   int num_val;
-  int size;
+
+  struct attributes {
+    char name[255];
+    int type; //0 = int, 1 = int array, 2 = function
+    int val;
+    int size_attr;
+  } attr;
 
 
 /* Line 387 of yacc.c  */
-#line 232 "y.tab.c"
+#line 249 "y.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -256,7 +273,7 @@ int yyparse ();
 /* Copy the second part of user declarations.  */
 
 /* Line 390 of yacc.c  */
-#line 260 "y.tab.c"
+#line 277 "y.tab.c"
 
 #ifdef short
 # undef short
@@ -574,13 +591,13 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   112,   112,   115,   116,   119,   119,   119,   125,   126,
-     129,   130,   133,   137,   143,   144,   170,   196,   197,   198,
-     199,   200,   201,   202,   205,   206,   209,   210,   213,   216,
-     217,   220,   223,   224,   227,   228,   231,   232,   233,   234,
-     237,   238,   239,   240,   241,   242,   245,   248,   249,   250,
-     253,   256,   257,   258,   259,   262,   263,   264,   267,   268,
-     269,   272,   273,   276,   277,   280,   290
+       0,   130,   130,   133,   134,   137,   137,   137,   143,   144,
+     147,   148,   150,   154,   160,   161,   205,   236,   237,   238,
+     239,   240,   241,   242,   247,   248,   251,   252,   255,   258,
+     259,   262,   265,   266,   269,   270,   273,   274,   275,   276,
+     279,   280,   281,   282,   283,   284,   287,   290,   291,   292,
+     295,   298,   299,   300,   301,   304,   308,   312,   315,   319,
+     324,   329,   330,   333,   334,   337,   348
 };
 #endif
 
@@ -1573,19 +1590,19 @@ yyreduce:
     {
         case 5:
 /* Line 1792 of yacc.c  */
-#line 119 "mini_l.y"
+#line 137 "mini_l.y"
     {milhouse << "func " << string((yyvsp[(2) - (2)].ident_str)) << endl;}
     break;
 
   case 6:
 /* Line 1792 of yacc.c  */
-#line 119 "mini_l.y"
+#line 137 "mini_l.y"
     {print_declarations();}
     break;
 
   case 7:
 /* Line 1792 of yacc.c  */
-#line 119 "mini_l.y"
+#line 137 "mini_l.y"
     {
             milhouse << "endfunc\n";
             symbol_table.clear();
@@ -1594,7 +1611,7 @@ yyreduce:
 
   case 12:
 /* Line 1792 of yacc.c  */
-#line 133 "mini_l.y"
+#line 150 "mini_l.y"
     {
                Sym sym(0,0,(yyvsp[(1) - (4)].ident_str),INT); 
                add_symbol(sym);
@@ -1603,7 +1620,7 @@ yyreduce:
 
   case 13:
 /* Line 1792 of yacc.c  */
-#line 137 "mini_l.y"
+#line 154 "mini_l.y"
     {
                Sym sym(0,(yyvsp[(6) - (9)].num_val),(yyvsp[(1) - (9)].ident_str),INTARRAY);
                add_symbol(sym);
@@ -1612,7 +1629,7 @@ yyreduce:
 
   case 15:
 /* Line 1792 of yacc.c  */
-#line 144 "mini_l.y"
+#line 161 "mini_l.y"
     {
                Sym sym(0,0,(yyvsp[(2) - (3)].ident_str),INT);
                add_symbol(sym);
@@ -1621,79 +1638,129 @@ yyreduce:
 
   case 16:
 /* Line 1792 of yacc.c  */
-#line 170 "mini_l.y"
+#line 205 "mini_l.y"
     {
              string a, b, c;
-             check_symbol((yyvsp[(1) - (3)].ident_str));
-             if (symbol_table[(yyvsp[(1) - (3)].ident_str)].type == INT) { //Check if var is an int
-               /* if (symbol_table[$3].type == INT) { //Check if expression is an int   
+             check_symbol((yyvsp[(1) - (3)].attr).name);
+             if (symbol_table[((yyvsp[(1) - (3)].attr).name)].type == INT) { //Check if var is an int
+               if (symbol_table[(yyvsp[(3) - (3)].attr).name].type == INT) { //Check if expression is an int   
                  a = make_temp();
                  milhouse << ". " << a << endl;
-                 milhouse << "= " << a << ", " << const_cast<char*>($3) << endl;
-                 milhouse << "= " << const_cast<char*>($1) << ", " << a << endl;
-                 
+                 milhouse << "= " << a << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).name) << endl;
+                 milhouse << "= " << const_cast<char*>((yyvsp[(1) - (3)].attr).name) << ", " << a << endl;
                }
-               else {
+               else { //if lhs = int and rhs = int array
 
                }
-               */
+               
              }
              else { //Check if var is an int array
-               /*if (symbol_table[$3].type == INT) { //Check if expression is an int
-                 
+               if (symbol_table[(yyvsp[(3) - (3)].attr).name].type == INT) { //Check if expression is an int
+                 a = make_temp();
+                 b = make_temp();
+                 milhouse << ". " << a << endl; 
+                 milhouse << "= " << a << ", " << const_cast<char*>((yyvsp[(1) - (3)].attr).name) << endl;
+                 milhouse << ". " << b << endl; 
+                 milhouse << "= " << b << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).name) << endl;              
+                 milhouse << "[]= " << const_cast<char*>((yyvsp[(1) - (3)].attr).name) << ", " << a << ", " << b << endl;
                }
                else {
 
                }
-               */
+            
              } 
+           }
+    break;
+
+  case 23:
+/* Line 1792 of yacc.c  */
+#line 242 "mini_l.y"
+    {
+             (yyval.attr).val = (yyvsp[(2) - (2)].attr).val;
            }
     break;
 
   case 55:
 /* Line 1792 of yacc.c  */
-#line 262 "mini_l.y"
-    {(yyval.ident_str) = (yyvsp[(2) - (2)].ident_str);}
+#line 304 "mini_l.y"
+    {
+      (yyval.attr).val = (yyvsp[(2) - (2)].attr).val;
+      strcpy((yyval.attr).name,(yyvsp[(2) - (2)].attr).name);
+    }
+    break;
+
+  case 56:
+/* Line 1792 of yacc.c  */
+#line 308 "mini_l.y"
+    {
+      (yyval.attr).val = (yyvsp[(1) - (1)].attr).val;
+      strcpy((yyval.attr).name, (yyvsp[(1) - (1)].attr).name);
+    }
     break;
 
   case 58:
 /* Line 1792 of yacc.c  */
-#line 267 "mini_l.y"
-    {(yyval.ident_str) = (yyvsp[(1) - (1)].ident_str);}
+#line 315 "mini_l.y"
+    {
+              (yyval.attr).val = (yyvsp[(1) - (1)].attr).val;
+              strcpy((yyval.attr).name,(yyvsp[(1) - (1)].attr).name);
+            }
+    break;
+
+  case 59:
+/* Line 1792 of yacc.c  */
+#line 319 "mini_l.y"
+    {
+              (yyval.attr).val = (yyvsp[(1) - (1)].num_val);
+              //$$.name = make_temp().c_str();
+              strcpy((yyval.attr).name, make_temp().c_str());
+            }
+    break;
+
+  case 60:
+/* Line 1792 of yacc.c  */
+#line 324 "mini_l.y"
+    {
+              strcpy((yyval.attr).name, (yyvsp[(2) - (3)].attr).name);
+            }
     break;
 
   case 65:
 /* Line 1792 of yacc.c  */
-#line 280 "mini_l.y"
+#line 337 "mini_l.y"
     {
        check_symbol((yyvsp[(1) - (1)].ident_str));
        if(symbol_table[(yyvsp[(1) - (1)].ident_str)].type == INTARRAY) {
          yyerror("Symbol is of type int array");
        }
        else {
-         (yyval.ident_str) = (yyvsp[(1) - (1)].ident_str);
-         var_stack.push((yyvsp[(1) - (1)].ident_str));
+         strcpy((yyval.attr).name,(yyvsp[(1) - (1)].ident_str));
+         (yyval.attr).type = 0;
+         (yyval.attr).val = symbol_table[(yyvsp[(1) - (1)].ident_str)].val;
        }
      }
     break;
 
   case 66:
 /* Line 1792 of yacc.c  */
-#line 290 "mini_l.y"
+#line 348 "mini_l.y"
     {
        check_symbol((yyvsp[(1) - (4)].ident_str));
        if(symbol_table[(yyvsp[(1) - (4)].ident_str)].type == INT) {
          yyerror("Symbol is of type int");
        }
        else {
-         (yyval.ident_str) = (yyvsp[(1) - (4)].ident_str);
+         strcpy((yyval.attr).name, (yyvsp[(1) - (4)].ident_str));
+         (yyval.attr).type = 1;
+         (yyval.attr).val = symbol_table[(yyvsp[(1) - (4)].ident_str)].val;
+         //$$.size = $3.size;
        }
    }
     break;
 
 
 /* Line 1792 of yacc.c  */
-#line 1697 "y.tab.c"
+#line 1764 "y.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1925,7 +1992,7 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 314 "mini_l.y"
+#line 377 "mini_l.y"
 
 
 int main (int argc, char **argv) {
@@ -1956,7 +2023,7 @@ void add_symbol(Sym s) {
     symbol_table[s.name] = s;
   }
   else {
-    string error = "Symbold already declared: " + s.name;
+    string error = "Symbol already declared: " + s.name;
     yyerror(error);
   }
 }
@@ -1994,3 +2061,24 @@ string make_temp() {
   string temp = "__temp__" + ss.str();
   return temp;
 }
+/*
+char* make_temp2() {
+  char k[255];
+  strcopy(k, "__temp__");
+  strcat(k, temp_cnt++.c_str());
+  return k;
+  
+  char* t = const_cast<char*>("__temp__");
+  char* k;
+  itoa(temp_cnt++,k,10);
+  strcat(t,k);
+
+  stringstream ss;
+  ss << temp_cnt++;
+  string temp = ss.str();
+  char* k = (char*) temp.c_str();
+  char* t = const_cast<char*>("__temp__");
+  strcat(t, k);
+  return t;
+}
+*/
