@@ -593,12 +593,12 @@ static const yytype_int8 yyrhs[] =
 static const yytype_uint16 yyrline[] =
 {
        0,   132,   132,   135,   136,   139,   139,   139,   145,   146,
-     149,   150,   152,   156,   162,   163,   207,   244,   245,   246,
-     247,   248,   249,   250,   255,   256,   259,   260,   263,   266,
-     267,   270,   273,   274,   277,   278,   281,   282,   283,   284,
-     287,   288,   289,   290,   291,   292,   295,   298,   299,   300,
-     303,   306,   307,   308,   309,   312,   318,   322,   325,   329,
-     335,   340,   341,   344,   345,   348,   359
+     149,   150,   152,   156,   162,   163,   207,   253,   254,   255,
+     256,   257,   258,   259,   264,   265,   268,   269,   272,   275,
+     276,   279,   282,   283,   286,   287,   290,   291,   292,   293,
+     296,   297,   298,   299,   300,   301,   304,   307,   308,   309,
+     312,   315,   316,   317,   318,   321,   327,   331,   334,   338,
+     344,   349,   350,   353,   354,   357,   368
 };
 #endif
 
@@ -1671,8 +1671,17 @@ yyreduce:
                  milhouse << "= " << b << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).name) << endl;              
                  milhouse << "[]= " << const_cast<char*>((yyvsp[(1) - (3)].attr).name) << ", " << a << ", " << b << endl;
                }
-               else {
-                 
+               else { // int array = int array
+                 a = make_temp();
+                 b = make_temp();
+                 c = make_temp();
+                 milhouse << ". " << a << endl;
+                 milhouse << "= " << a << ", " << const_cast<char*>((yyvsp[(1) - (3)].attr).index) << endl;
+                 milhouse << ". " << b << endl;
+                 milhouse << "= " << b << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).index) << endl;
+                 milhouse << ". " << c << endl;
+                 milhouse << "=[] " << c << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).name) << endl;
+                 milhouse << "[]= " << const_cast<char*>((yyvsp[(1) - (3)].attr).name) << ", " << a << ", " << c << endl;
                }
             
              } 
@@ -1681,7 +1690,7 @@ yyreduce:
 
   case 23:
 /* Line 1792 of yacc.c  */
-#line 250 "mini_l.y"
+#line 259 "mini_l.y"
     {
              (yyval.attr).val = (yyvsp[(2) - (2)].attr).val;
            }
@@ -1689,43 +1698,43 @@ yyreduce:
 
   case 40:
 /* Line 1792 of yacc.c  */
-#line 287 "mini_l.y"
+#line 296 "mini_l.y"
     { (yyval.ident_str) = const_cast<char*>("=="); }
     break;
 
   case 41:
 /* Line 1792 of yacc.c  */
-#line 288 "mini_l.y"
+#line 297 "mini_l.y"
     { (yyval.ident_str) = const_cast<char*>("!="); }
     break;
 
   case 42:
 /* Line 1792 of yacc.c  */
-#line 289 "mini_l.y"
+#line 298 "mini_l.y"
     { (yyval.ident_str) = const_cast<char*>("<"); }
     break;
 
   case 43:
 /* Line 1792 of yacc.c  */
-#line 290 "mini_l.y"
+#line 299 "mini_l.y"
     { (yyval.ident_str) = const_cast<char*>(">"); }
     break;
 
   case 44:
 /* Line 1792 of yacc.c  */
-#line 291 "mini_l.y"
+#line 300 "mini_l.y"
     { (yyval.ident_str) = const_cast<char*>("<="); }
     break;
 
   case 45:
 /* Line 1792 of yacc.c  */
-#line 292 "mini_l.y"
+#line 301 "mini_l.y"
     { (yyval.ident_str) = const_cast<char*>(">="); }
     break;
 
   case 55:
 /* Line 1792 of yacc.c  */
-#line 312 "mini_l.y"
+#line 321 "mini_l.y"
     {
       // making it negative
       // $$.val = $2.val;
@@ -1736,7 +1745,7 @@ yyreduce:
 
   case 56:
 /* Line 1792 of yacc.c  */
-#line 318 "mini_l.y"
+#line 327 "mini_l.y"
     {
       (yyval.attr).val = (yyvsp[(1) - (1)].attr).val;
       strcpy((yyval.attr).name, (yyvsp[(1) - (1)].attr).name);
@@ -1745,7 +1754,7 @@ yyreduce:
 
   case 58:
 /* Line 1792 of yacc.c  */
-#line 325 "mini_l.y"
+#line 334 "mini_l.y"
     {
               (yyval.attr).val = (yyvsp[(1) - (1)].attr).val;
               strcpy((yyval.attr).name,(yyvsp[(1) - (1)].attr).name);
@@ -1754,7 +1763,7 @@ yyreduce:
 
   case 59:
 /* Line 1792 of yacc.c  */
-#line 329 "mini_l.y"
+#line 338 "mini_l.y"
     {
               (yyval.attr).val = (yyvsp[(1) - (1)].num_val);
               (yyval.attr).type = 3;
@@ -1765,7 +1774,7 @@ yyreduce:
 
   case 60:
 /* Line 1792 of yacc.c  */
-#line 335 "mini_l.y"
+#line 344 "mini_l.y"
     {
               strcpy((yyval.attr).name, (yyvsp[(2) - (3)].attr).name);
             }
@@ -1773,7 +1782,7 @@ yyreduce:
 
   case 65:
 /* Line 1792 of yacc.c  */
-#line 348 "mini_l.y"
+#line 357 "mini_l.y"
     {
        check_symbol((yyvsp[(1) - (1)].ident_str));
        if(symbol_table[(yyvsp[(1) - (1)].ident_str)].type == INTARRAY) {
@@ -1789,7 +1798,7 @@ yyreduce:
 
   case 66:
 /* Line 1792 of yacc.c  */
-#line 359 "mini_l.y"
+#line 368 "mini_l.y"
     {
        check_symbol((yyvsp[(1) - (4)].ident_str));
        if(symbol_table[(yyvsp[(1) - (4)].ident_str)].type == INT) {
@@ -1811,7 +1820,7 @@ yyreduce:
 
 
 /* Line 1792 of yacc.c  */
-#line 1815 "y.tab.c"
+#line 1824 "y.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2043,7 +2052,7 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 379 "mini_l.y"
+#line 388 "mini_l.y"
 
 
 int main (int argc, char **argv) {

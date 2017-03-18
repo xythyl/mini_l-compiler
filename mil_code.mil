@@ -29,20 +29,27 @@ func main
 . __temp__17
 = __temp__17, j
 []= t, __temp__16, __temp__17
+. __temp__18
+= __temp__18, i
 . __temp__19
-= __temp__19, 9
+=[] __temp__19, t__temp__18
+= k, __temp__19
 . __temp__20
-=[] __temp__20, t__temp__19
-= k, __temp__20
+= __temp__20, i
 . __temp__21
 = __temp__21, j
 . __temp__22
-= __temp__22, k
-[]= t, __temp__21, __temp__22
-. __temp__25
-= __temp__25, __temp__23
-= k, __temp__25
+=[] __temp__22, t
+[]= t, __temp__20, __temp__22
+. __temp__23
+= __temp__23, j
+. __temp__24
+= __temp__24, k
+[]= t, __temp__23, __temp__24
 . __temp__27
-= __temp__27, i
-= i, __temp__27
+= __temp__27, __temp__25
+= k, __temp__27
+. __temp__29
+= __temp__29, i
+= i, __temp__29
 endfunc

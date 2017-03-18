@@ -236,7 +236,16 @@ statement: var ASSIGN expression {
                  milhouse << "[]= " << const_cast<char*>($1.name) << ", " << a << ", " << b << endl;
                }
                else { // int array = int array
-                  
+                 a = make_temp();
+                 b = make_temp();
+                 c = make_temp();
+                 milhouse << ". " << a << endl;
+                 milhouse << "= " << a << ", " << const_cast<char*>($1.index) << endl;
+                 milhouse << ". " << b << endl;
+                 milhouse << "= " << b << ", " << const_cast<char*>($3.index) << endl;
+                 milhouse << ". " << c << endl;
+                 milhouse << "=[] " << c << ", " << const_cast<char*>($3.name) << endl;
+                 milhouse << "[]= " << const_cast<char*>($1.name) << ", " << a << ", " << c << endl;
                }
             
              } 
