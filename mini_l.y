@@ -65,6 +65,7 @@
   stack<int> predicate_stack;
 
   vector<string> functions;
+  vector<string> vars;
   
   void add_symbol(Sym sym);
   void check_symbol(string name);
@@ -254,13 +255,42 @@ statement: var ASSIGN expression {
          | WHILE bool_exp BEGINLOOP statement SEMICOLON statement_block ENDLOOP 
          | DO BEGINLOOP statement SEMICOLON statement_block ENDLOOP WHILE bool_exp 
          | READ var var_block {
-              
-            } 
-         | WRITE var var_block 
+             var_stack.push($2.name);
+             while (!var_stack.empty()) {
+                if ($2.type == 0) {
+                    milhouse << ".< " << var_stack.top() << endl;
+                    var_stack.pop();
+                }
+                else {
+                    string a = make_temp();
+                    milhouse << ". " << a << endl;
+                    milhouse << "= " << a << ", " << $2.index << endl;
+                    milhouse << ".[]< " << var_stack.top() << ", "  <<  a << endl;
+                    var_stack.pop();
+                }
+             }
+
+          } 
+         | WRITE var var_block {
+            var_stack.push($2.name);
+            while (!var_stack.empty()) {
+                if ($2.type == 0) {
+                    milhouse << ".> " << var_stack.top() << endl;
+                    var_stack.pop();
+                }
+                else {
+                    string a = make_temp();
+                    milhouse << ". " << a << endl;
+                    milhouse << "= " << a << ", " << $2.index << endl;
+                    milhouse << ".[]> " << var_stack.top() << ", "  <<  a << endl;
+                    var_stack.pop();
+                }
+            }
+         }
          | CONTINUE 
          | RETURN expression {
              $$.val = $2.val;
-           }
+          }
          ;
 
 else_block: 
@@ -268,7 +298,10 @@ else_block:
           ;
 
 var_block:  
-         | COMMA var var_block 
+         | COMMA var var_block {
+             // vars.push_back($2.name);
+             var_stack.push($2.name);
+           } 
          ;
 
 bool_exp: relation_and_expr rel_or 
