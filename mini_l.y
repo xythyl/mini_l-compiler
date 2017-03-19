@@ -391,14 +391,23 @@ expression: expression ADD multiplicative_expr {
           ;
 
 multiplicative_expr: multiplicative_expr MULT term {
-                       strcpy($$.name,$1.name);
+                       string temp = make_temp();
+                       milhouse << ". " << temp << endl;
+                       milhouse << "* " << temp << ", " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.name) << endl;
+                       strcpy($$.name, temp.c_str());
                      }
                    | multiplicative_expr DIV term {
-                       strcpy($$.name,$1.name);
-                     }
+                       string temp = make_temp();
+                       milhouse << ". " << temp << endl;
+                       milhouse << "/ " << temp << ", " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.name) << endl;
+                       strcpy($$.name, temp.c_str());
+                    }
                    | multiplicative_expr MOD term {
-                       strcpy($$.name,$1.name);
-                     }
+                       string temp = make_temp();
+                       milhouse << ". " << temp << endl;
+                       milhouse << "% " << temp << ", " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.name) << endl;
+                       strcpy($$.name, temp.c_str());
+                    }
                    | term{
                        strcpy($$.name,$1.name);
                      }
@@ -452,7 +461,9 @@ term: SUB var {
         $$.val = $2*-1;
         $$.type = 3;
         strcpy($$.name, make_temp().c_str());
-      }
+        milhouse << ". " << const_cast<char*>($$.name) << endl;
+        milhouse << "= " << const_cast<char*>($$.name) <<  ", " << $$.val << endl;
+     }
     | NUMBER  {
         $$.val = $1;
         $$.type = 3;
@@ -461,7 +472,9 @@ term: SUB var {
         milhouse << "= " << const_cast<char*>($$.name) <<  ", " << $$.val << endl;
       }
     | SUB L_PAREN expression R_PAREN
-    | L_PAREN expression R_PAREN
+    | L_PAREN expression R_PAREN {
+        strcpy($$.name, $2.name);
+    }
     | IDENT L_PAREN exp_comma_block R_PAREN
     | IDENT L_PAREN R_PAREN
     ;
