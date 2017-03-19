@@ -301,6 +301,7 @@ statement: var ASSIGN expression {
 
 else_block: 
           | ELSE statement SEMICOLON statement_block 
+          // need to finish shit
           ;
 
 var_block:  
