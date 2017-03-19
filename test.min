@@ -5,13 +5,14 @@ endparams
 beginlocals
 
 i: integer;
+k: array[1] of integer;
 
 endlocals
 
 beginbody
   
-  i := 2 * 4 / 2 * 4 + (7 + 2 - 3) / 2 + ( 3 + 3 * 3 * 3 );
-  
+  k[0] := 1;
+  i := k[0];
   write i;
 
 endbody

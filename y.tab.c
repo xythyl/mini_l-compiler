@@ -1661,12 +1661,12 @@ yyreduce:
                  milhouse << "= " << const_cast<char*>((yyvsp[(1) - (3)].attr).name) << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).name) << endl;
                }
                else { //if lhs = int and rhs = int array
-                 a = make_temp();
+                 //a = make_temp();
                  b = make_temp();
-                 milhouse << ". " << a << endl;
-                 milhouse << "= " << a << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).index) << endl;  
+                 //milhouse << ". " << a << endl;
+                 milhouse << "= " << const_cast<char*>((yyvsp[(1) - (3)].attr).name) << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).index) << endl;  
                  milhouse << ". " << b << endl;
-                 milhouse << "=[] " << b << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).name)  << a << endl;
+                 milhouse << "=[] " << b << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).name) << a << ", " << const_cast<char*>((yyvsp[(1) - (3)].attr).name) << endl;
                  milhouse << "= " << const_cast<char*>((yyvsp[(1) - (3)].attr).name) << ", " << b << endl;
                }
                
@@ -1946,19 +1946,23 @@ yyreduce:
          strcpy((yyval.attr).name, (yyvsp[(1) - (4)].ident_str));
          (yyval.attr).type = 1;
          (yyval.attr).val = symbol_table[(yyvsp[(1) - (4)].ident_str)].val;
-         if ((yyvsp[(3) - (4)].attr).type == 3) { //if type is a number
-           sprintf((yyval.attr).index, "%d", (yyvsp[(3) - (4)].attr).val);
+         strcpy((yyval.attr).index, (yyvsp[(3) - (4)].attr).name);
+         //milhouse << ". " << const_cast<char*>($$.index) << endl;
+         /*
+         if ($3.type == 3) { //if type is a number
+           sprintf($$.index, "%d", $3.val);
          }
          else { //else type is an int, intarray, or function
-           strcpy((yyval.attr).index, (yyvsp[(3) - (4)].attr).name);
+           strcpy($$.index, $3.name);
          }
+         */
        }
    }
     break;
 
 
 /* Line 1792 of yacc.c  */
-#line 1962 "y.tab.c"
+#line 1966 "y.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2190,7 +2194,7 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 526 "mini_l.y"
+#line 530 "mini_l.y"
 
 
 int main (int argc, char **argv) {

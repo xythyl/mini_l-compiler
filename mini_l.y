@@ -230,12 +230,12 @@ statement: var ASSIGN expression {
                  milhouse << "= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.name) << endl;
                }
                else { //if lhs = int and rhs = int array
-                 a = make_temp();
+                 //a = make_temp();
                  b = make_temp();
-                 milhouse << ". " << a << endl;
-                 milhouse << "= " << a << ", " << const_cast<char*>($3.index) << endl;  
+                 //milhouse << ". " << a << endl;
+                 milhouse << "= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.index) << endl;  
                  milhouse << ". " << b << endl;
-                 milhouse << "=[] " << b << ", " << const_cast<char*>($3.name)  << a << endl;
+                 milhouse << "=[] " << b << ", " << const_cast<char*>($3.name) << a << ", " << const_cast<char*>($1.name) << endl;
                  milhouse << "= " << const_cast<char*>($1.name) << ", " << b << endl;
                }
                
@@ -512,12 +512,16 @@ var: IDENT {
          strcpy($$.name, $1);
          $$.type = 1;
          $$.val = symbol_table[$1].val;
+         strcpy($$.index, $3.name);
+         //milhouse << ". " << const_cast<char*>($$.index) << endl;
+         /*
          if ($3.type == 3) { //if type is a number
            sprintf($$.index, "%d", $3.val);
          }
          else { //else type is an int, intarray, or function
            strcpy($$.index, $3.name);
          }
+         */
        }
    }
    /* IDENT var_2 */
