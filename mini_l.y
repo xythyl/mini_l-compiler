@@ -156,10 +156,13 @@ declaration: IDENT comma_ident COLON INTEGER {
                add_symbol(sym);
              }
            | IDENT comma_ident COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {
-               Sym sym(0,$6,$1,INTARRAY);
-               add_symbol(sym);
+               ident_stack.push($1);
+               //Sym sym(0,$6,$1,INTARRAY);
+               //add_symbol(sym);
                while(!ident_stack.empty()) {
                  string temp = ident_stack.top();
+                 Sym sym(0,$6,temp,INTARRAY);
+                 add_symbol(sym);
                  ident_stack.pop(); 
                }
              }
@@ -167,8 +170,8 @@ declaration: IDENT comma_ident COLON INTEGER {
 
 comma_ident: 
             | COMMA IDENT comma_ident {
-               Sym sym(0,0,$2,INT);
-               add_symbol(sym);
+               //Sym sym(0,0,$2,INT);
+               //add_symbol(sym);
                ident_stack.push($2);
              }
            ;
@@ -496,7 +499,7 @@ string make_temp() {
 }
 
 string make_label() {
-  sstringstream ss;
+  stringstream ss;
   ss << label_cnt++;
   string temp = "__label__" + ss.str();
   return temp;
