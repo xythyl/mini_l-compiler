@@ -138,7 +138,7 @@ program:
        | function program 
        ;
 
-function: FUNCTION IDENT {milhouse << "func " << string($2) << endl;} SEMICOLON BEGIN_PARAMS declaration_block END_PARAMS  BEGIN_LOCALS declaration_block END_LOCALS {print_declarations();} BEGIN_BODY statement SEMICOLON statement_block END_BODY {
+function: FUNCTION IDENT {milhouse << "func " << string($2) << endl;} SEMICOLON BEGIN_PARAMS declaration_block END_PARAMS  BEGIN_LOCALS declaration_block END_LOCALS BEGIN_BODY statement SEMICOLON statement_block END_BODY {
             milhouse << "endfunc\n";
             symbol_table.clear();
         }
@@ -152,17 +152,22 @@ statement_block:
                | statement SEMICOLON statement_block 
                ;
 declaration: IDENT comma_ident COLON INTEGER {
-               Sym sym(0,0,$1,INT); 
-               add_symbol(sym);
+               ident_stack.push($1);
+               while(!ident_stack.empty()) {
+                 string temp = ident_stack.top();
+                 Sym sym(0,0,temp,INT); 
+                 add_symbol(sym);
+                 milhouse << ". " << temp << endl;
+                 ident_stack.pop(); 
+               }
              }
            | IDENT comma_ident COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {
                ident_stack.push($1);
-               //Sym sym(0,$6,$1,INTARRAY);
-               //add_symbol(sym);
                while(!ident_stack.empty()) {
                  string temp = ident_stack.top();
                  Sym sym(0,$6,temp,INTARRAY);
                  add_symbol(sym);
+                 milhouse << ".[] " << temp << ", " << $6 << endl;
                  ident_stack.pop(); 
                }
              }
@@ -381,10 +386,14 @@ term_minus: var {
               strcpy($$.name,$1.name);
             }
           | NUMBER {
+              string temp = make_temp();
+              milhouse << ". " << temp << endl;
+              milhouse << "= " << temp << ", " << $1 << endl;
               $$.val = $1;
               $$.type = 3;
               //$$.name = make_temp().c_str();
-              strcpy($$.name, make_temp().c_str());
+              strcpy($$.name, temp.c_str());
+              
             }
           | L_PAREN expression R_PAREN {
               strcpy($$.name, $2.name);

@@ -1,16 +1,18 @@
 func main
+. n
 . i
 . j
 . k
-. n
-. q
 .[] t, 20
 .< i
 .< j
-.< k
+. __temp__0
+= __temp__0, 0
 . __temp__1
 = __temp__1, __temp__0
 = k, __temp__1
+. __temp__2
+= __temp__2, 20
 . __temp__3
 = __temp__3, __temp__2
 = n, __temp__3
@@ -19,17 +21,31 @@ func main
 . __temp__5
 = __temp__5, k
 []= t, __temp__4, __temp__5
+. __temp__6
+= __temp__6, 1
 . __temp__7
 = __temp__7, k
 = k, __temp__7
+. __temp__8
+= __temp__8, 2
+. __temp__9
+= __temp__9, 0
+. __temp__10
+= __temp__10, 1
 . __temp__11
 = __temp__11, k
 .[]> t, __temp__11
+. __temp__12
+= __temp__12, 0
+. __temp__13
+= __temp__13, 2
 . __temp__14
 = __temp__14, i
 . __temp__15
 = __temp__15, i
 []= t, __temp__14, __temp__15
+. __temp__16
+= __temp__16, 2
 . __temp__17
 = __temp__17, j
 . __temp__18
@@ -52,20 +68,32 @@ func main
 . __temp__25
 = __temp__25, k
 []= t, __temp__24, __temp__25
+. __temp__26
+= __temp__26, 1
+. __temp__27
+= __temp__27, 3
 . __temp__28
 = __temp__28, __temp__26
 = k, __temp__28
+. __temp__29
+= __temp__29, 1
 . __temp__30
 = __temp__30, i
 = i, __temp__30
+. __temp__31
+= __temp__31, 1
 .> k
 .> i
 .> j
 .> k
+. __temp__32
+= __temp__32, 0
 . __temp__33
 = __temp__33, i
 .[]> t, __temp__33
-. __temp__36
-= __temp__36, 2
-.[]> t, __temp__36
+. __temp__34
+= __temp__34, 0
+. __temp__35
+= __temp__35, j
+.[]> t, __temp__35
 endfunc

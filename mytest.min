@@ -6,13 +6,13 @@ beginlocals
 
   n : integer;
   i, j, k: integer;
-  t, q : array [20] of integer;
+  t: array [20] of integer;
 
 endlocals
 
 beginbody	## main program
 
-  read i, j, k;
+  read i, j;
 
   k := 0;
   n := 20;
