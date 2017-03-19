@@ -102,9 +102,9 @@
 %start start
 %token FUNCTION BEGIN_PARAMS END_PARAMS BEGIN_LOCALS END_LOCALS BEGIN_BODY
 %token END_BODY INTEGER ARRAY OF IF THEN ENDIF ELSE WHILE DO BEGINLOOP ENDLOOP
-%token CONTINUE READ WRITE AND OR NOT TRUE FALSE RETURN NUMBER IDENT
+%token CONTINUE READ WRITE AND OR NOT TRUE FALSE RETURN NUMBER IDENT 
 
-%token SUB ADD MULT DIV MOD
+%token SUB ADD MULT DIV MOD UMINUS
 
 %token EQ NEQ LT GT LTE GTE
 
@@ -126,7 +126,7 @@
 //%type<ident_str> comma_ident
 //%type<ident_str> declaration
 
-%type<attr> var term_minus expression term declaration statement
+%type<attr> var expression term declaration statement multiplicative_expr
 %type<ident_str> comp
 
 %%
@@ -224,10 +224,10 @@ statement: var ASSIGN expression {
              check_symbol($1.name);
              if (symbol_table[($1.name)].type == INT) { //Check if var is an int
                if (symbol_table[$3.name].type == INT) { //Check if expression is an int   
-                 a = make_temp();
-                 milhouse << ". " << a << endl;
-                 milhouse << "= " << a << ", " << const_cast<char*>($3.name) << endl;
-                 milhouse << "= " << const_cast<char*>($1.name) << ", " << a << endl;
+                 //a = make_temp();
+                 //milhouse << ". " << a << endl;
+                 // milhouse << "= " << a << ", " << const_cast<char*>($3.name) << endl;
+                 milhouse << "= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.name) << endl;
                }
                else { //if lhs = int and rhs = int array
                  a = make_temp();
@@ -304,6 +304,7 @@ statement: var ASSIGN expression {
          | CONTINUE 
          | RETURN expression {
              $$.val = $2.val;
+             strcpy($$.name,$2.name);
           }
          ;
 
@@ -351,6 +352,7 @@ comp: EQ { $$ = const_cast<char*>("=="); }
     | GTE { $$ = const_cast<char*>(">="); }
     ;
 
+/*
 expression: multiplicative_expr mult_expr 
           ;
 
@@ -359,7 +361,9 @@ mult_expr: ADD multiplicative_expr mult_expr
          | 
          ;
 
-multiplicative_expr: term mult_expr_term 
+multiplicative_expr: term mult_expr_term {
+                       strcpy($$.name,$1.name);
+                     } 
                    ;
 
 mult_expr_term: MULT term mult_expr_term
@@ -367,7 +371,39 @@ mult_expr_term: MULT term mult_expr_term
               | MOD term mult_expr_term
               | 
               ;
+*/
 
+expression: expression ADD multiplicative_expr {
+              string temp = make_temp();
+              milhouse << ". " << temp << endl;
+              milhouse << "+ " << temp << ", " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.name) << endl;
+              strcpy($$.name, temp.c_str());
+            }
+          | expression SUB multiplicative_expr {
+              string temp = make_temp();
+              milhouse << ". " << temp << endl;
+              milhouse << "- " << temp << ", " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.name) << endl;
+              strcpy($$.name, temp.c_str());
+            }
+          |  multiplicative_expr {
+              strcpy($$.name,$1.name);
+          }
+          ;
+
+multiplicative_expr: multiplicative_expr MULT term {
+                       strcpy($$.name,$1.name);
+                     }
+                   | multiplicative_expr DIV term {
+                       strcpy($$.name,$1.name);
+                     }
+                   | multiplicative_expr MOD term {
+                       strcpy($$.name,$1.name);
+                     }
+                   | term{
+                       strcpy($$.name,$1.name);
+                     }
+                   ;
+/*
 term: SUB term_minus {
       // making it negative
       // $$.val = $2.val;
@@ -386,20 +422,54 @@ term_minus: var {
               strcpy($$.name,$1.name);
             }
           | NUMBER {
-              string temp = make_temp();
-              milhouse << ". " << temp << endl;
-              milhouse << "= " << temp << ", " << $1 << endl;
+              //string temp = make_temp();
+              //milhouse << ". " << temp << endl;
+              //milhouse << "= " << temp << ", " << $1 << endl;
               $$.val = $1;
               $$.type = 3;
               //$$.name = make_temp().c_str();
-              strcpy($$.name, temp.c_str());
+              //strcpy($$.name, temp.c_str());
               
+              sprintf($$.name, "%d", $1);
             }
           | L_PAREN expression R_PAREN {
               strcpy($$.name, $2.name);
             }
           ;
+*/
 
+term: SUB var {
+        $$.val = $2.val;
+        $$.type = $2.type;
+        strcpy($$.name,$2.name);
+      }
+    | var {
+        $$.val = $1.val;
+        $$.type = $1.type;
+        strcpy($$.name,$1.name);
+      }
+    | SUB NUMBER {
+        $$.val = $2*-1;
+        $$.type = 3;
+        strcpy($$.name, make_temp().c_str());
+      }
+    | NUMBER  {
+        $$.val = $1;
+        $$.type = 3;
+        strcpy($$.name, make_temp().c_str());
+        milhouse << ". " << const_cast<char*>($$.name) << endl;
+        milhouse << "= " << const_cast<char*>($$.name) <<  ", " << $$.val << endl;
+      }
+    | SUB L_PAREN expression R_PAREN
+    | L_PAREN expression R_PAREN
+    | IDENT L_PAREN exp_comma_block R_PAREN
+    | IDENT L_PAREN R_PAREN
+    ;
+
+exp_comma_block: expression
+               | expression COMMA exp_comma_block
+               ;
+/*
 exp_comma_block: expression exp_comma_block2 
                |  
                ;
@@ -407,6 +477,7 @@ exp_comma_block: expression exp_comma_block2
 exp_comma_block2: 
                 | COMMA expression exp_comma_block2 
                 ;
+*/
 
 var: IDENT {
        check_symbol($1);
