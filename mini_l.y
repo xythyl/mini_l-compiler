@@ -494,4 +494,5 @@ string make_label() {
   ss << label_cnt++;
   string temp = "__label__" + ss.str();
   return temp;
+
 }
