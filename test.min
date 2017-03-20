@@ -4,15 +4,26 @@ endparams
 
 beginlocals
 
-i, j: integer;
-k: array[4] of integer;
+i: integer;
+x: integer;
+j, k: array[4] of integer;
 
 endlocals
 
 beginbody
 
-  i := 1 + 3;
-  j := i + i;
-  write j;
+  i := 2;
+  x := i;
+
+  write x;
+
+  k[0] := x;
+  write k[0];
+
+  i := k[0];
+  write i;
+
+  j[1] := k[0];
+  write j[1];
 
 endbody

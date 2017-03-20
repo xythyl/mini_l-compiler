@@ -221,9 +221,9 @@ dec_block:
 
 statement: var ASSIGN expression {
              string a, b, c;
-             check_symbol($1.name);
-             if (symbol_table[($1.name)].type == INT) { //Check if var is an int
-               if (symbol_table[$3.name].type == INT) { //Check if expression is an int   
+             //check_symbol($1.name);
+             if ($1.type == 0) { //Check if var is an int
+               if ($3.type == 0) { //Check if expression is an int   
                  //a = make_temp();
                  //milhouse << ". " << a << endl;
                  // milhouse << "= " << a << ", " << const_cast<char*>($3.name) << endl;
@@ -233,15 +233,15 @@ statement: var ASSIGN expression {
                  //a = make_temp();
                  b = make_temp();
                  //milhouse << ". " << a << endl;
-                 milhouse << "= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.index) << endl;  
+                 //milhouse << "= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.index) << endl;  
                  milhouse << ". " << b << endl;
-                 milhouse << "=[] " << b << ", " << const_cast<char*>($3.name) << a << ", " << const_cast<char*>($1.name) << endl;
+                 milhouse << "=[] " << b << ", " << const_cast<char*>($3.name) << a << ", " << const_cast<char*>($3.index) << endl;
                  milhouse << "= " << const_cast<char*>($1.name) << ", " << b << endl;
                }
                
              }
              else { //Check if var is an int array
-               if (symbol_table[$3.name].type == INT) { //Check if expression is an int [array := int]
+               if ($3.type == 0) { //Check if expression is an int [array := int]
                  //a = make_temp();
                  //b = make_temp();
                  //milhouse << ". " << a << endl; 
@@ -249,19 +249,25 @@ statement: var ASSIGN expression {
                  //milhouse << ". " << b << endl; 
                  //milhouse << "= " << b << ", " << const_cast<char*>($3.name) << endl;              
                  //milhouse << "[]= " << const_cast<char*>($1.name) << ", " << a << ", " << b << endl;
+                 while(!index_stack.empty()) {
+                     // $1.index = make_temp().c_str();
+                    string temp = make_temp();
+                    // strcpy($1.index, temp.c_str());
+                    index_stack.pop();
+                 }
                  milhouse << "[]= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($1.index) << ", " << const_cast<char*>($3.name) << endl;
                }
                else { // int array = int array
-                 a = make_temp();
-                 b = make_temp();
+                 //a = make_temp();
+                 //b = make_temp();
                  c = make_temp();
-                 milhouse << ". " << a << endl;
-                 milhouse << "= " << a << ", " << const_cast<char*>($1.index) << endl;
-                 milhouse << ". " << b << endl;
-                 milhouse << "= " << b << ", " << const_cast<char*>($3.index) << endl;
+                 //milhouse << ". " << a << endl;
+                 //milhouse << "= " << a << ", " << const_cast<char*>($1.index) << endl;
+                 //milhouse << ". " << b << endl;
+                 //milhouse << "= " << b << ", " << const_cast<char*>($3.index) << endl;
                  milhouse << ". " << c << endl;
-                 milhouse << "=[] " << c << ", " << const_cast<char*>($3.name) << endl;
-                 milhouse << "[]= " << const_cast<char*>($1.name) << ", " << a << ", " << c << endl;
+                 milhouse << "=[] " << c << ", " << const_cast<char*>($3.name) << ", " << const_cast<char*>($3.index) << endl;
+                 milhouse << "[]= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($1.index) << ", " << c << endl;
                }
             
              } 
@@ -367,7 +373,8 @@ expression: expression ADD multiplicative_expr {
             }
           |  multiplicative_expr {
               strcpy($$.name,$1.name);
-          }
+              $$.type = $1.type;
+             }
           ;
 
 multiplicative_expr: multiplicative_expr MULT term {
@@ -390,35 +397,44 @@ multiplicative_expr: multiplicative_expr MULT term {
                     }
                    | term{
                        strcpy($$.name,$1.name);
+                       $$.type = $1.type;
                      }
                    ;
 
 term: SUB var {
         $$.val = $2.val*-1;
         $$.type = $2.type;
-        strcpy($$.name,make_temp().c_str());
-        milhouse << ". " << const_cast<char*>($$.name) << endl;
-        milhouse << "= " << const_cast<char*>($$.name) <<  ", " << const_cast<char*>($2.name) << endl;
+        if ($2.type != 1) {
+          strcpy($$.name,make_temp().c_str());
+          milhouse << ". " << const_cast<char*>($$.name) << endl;
+          milhouse << "= " << const_cast<char*>($$.name) <<  ", " << const_cast<char*>($2.name) << endl;
+         }
       }
     | var {
         $$.val = $1.val;
         $$.type = $1.type;
-        strcpy($$.name,make_temp().c_str());
-        milhouse << ". " << const_cast<char*>($$.name) << endl;
-        milhouse << "= " << const_cast<char*>($$.name) <<  ", " << const_cast<char*>($1.name) << endl;
+        if ($1.type != 1) {
+          strcpy($$.name,make_temp().c_str());
+          strcpy($$.index,$$.name);
+          milhouse << ". " << const_cast<char*>($$.name) << endl;
+          milhouse << "= " << const_cast<char*>($$.name) <<  ", " << const_cast<char*>($1.name) << endl;
+        }
       }
     | SUB NUMBER {
         $$.val = $2*-1;
-        $$.type = 3;
+        // $$.type = 3;
+        $$.type = 0;
         strcpy($$.name, make_temp().c_str());
         milhouse << ". " << const_cast<char*>($$.name) << endl;
         milhouse << "= " << const_cast<char*>($$.name) <<  ", " << $$.val << endl;
      }
     | NUMBER  {
         $$.val = $1;
-        $$.type = 3;
+        // $$.type = 3;
+        $$.type = 0;
 
         strcpy($$.name, make_temp().c_str());
+        strcpy($$.index,$$.name);
         milhouse << ". " << const_cast<char*>($$.name) << endl;
         milhouse << "= " << const_cast<char*>($$.name) <<  ", " << $$.val << endl;
       }
@@ -444,26 +460,54 @@ exp_comma_block2:
 */
 
 var: IDENT {
-       check_symbol($1);
-       if(symbol_table[$1].type == INTARRAY) {
-         yyerror("Symbol is of type int array");
-       }
-       else {
+       //check_symbol($1);
+       //if($1.type == 1) {
+         //yyerror("Symbol is of type int array");
+       //}
+       //else {
          strcpy($$.name,$1);
          $$.type = 0;
-         $$.val = symbol_table[$1].val;
-       }
+         //$$.val = symbol_table[$1].val;
+       //}
      }
    | IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
-       check_symbol($1);
-       if(symbol_table[$1].type == INT) {
-         yyerror("Symbol is of type int");
-       }
-       else {
-         strcpy($$.name, $1);
-         $$.type = 1;
-         $$.val = symbol_table[$1].val;
-         strcpy($$.index, $3.name);
+       //check_symbol($1);
+       //if($1.type == 0) {
+         //yyerror("Symbol is of type int");
+       //}
+       //else {
+         
+         if ($3.type == 1) {
+           string temp = make_temp();
+           $$.type = 1;
+           //strcpy($$.name, temp.c_str());
+           
+           strcpy($$.index, temp.c_str());
+           strcpy($$.name, $1);
+
+           milhouse << ". " << temp << endl; 
+           milhouse << "=[] " << temp << ", " << const_cast<char*>($3.name) << ", " << const_cast<char*>($3.index) << endl;
+         }
+         else {
+           strcpy($$.name, $1);
+           $$.type = 1;
+           //$$.val = symbol_table[$1].val;
+           strcpy($$.index, $3.name);
+
+           string temp = const_cast<char*>($3.name);
+           if (find_symbol(temp)) {
+             index_stack.push($3.name);
+           }  
+         }
+
+         
+
+         //string temp = make_temp();
+         //strcpy($$.name, temp.c_str());
+         //milhouse << ". " << temp << endl; 
+         //milhouse << "=[] " << temp << ", " << $1 << ", " << const_cast<char*>($3.name) << endl;
+         
+
          //milhouse << ". " << const_cast<char*>($$.index) << endl;
          /*
          if ($3.type == 3) { //if type is a number
@@ -473,7 +517,7 @@ var: IDENT {
            strcpy($$.index, $3.name);
          }
          */
-       }
+       //}
    }
    /* IDENT var_2 */
    ;
