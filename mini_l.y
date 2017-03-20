@@ -181,59 +181,15 @@ comma_ident:
              }
            ;
 
-/*
-declaration: IDENT comma_int {
-               Sym sym(0,0,$1,INT); 
-               add_symbol(sym);
-             }
-           | IDENT comma_array L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {
-               Sym sym(0,$4,$1,INTARRAY);
-               add_symbol(sym);
-             }
-           ;
-
-
-comma_array: comma_array_loop COLON ARRAY
-           ;
-
-comma_int: comma_int_loop COLON INTEGER
-         ;
-
-comma_int_loop:   
-        | COMMA IDENT comma_int_loop {
-            Sym sym(0,0,$2,INT); 
-            add_symbol(sym);
-          }
-       ;
-
-comma_array_loop:   
-        | COMMA IDENT comma_array_loop{
-            Sym sym(0,0,$2,INTARRAY);
-            add_symbol(sym);
-          }
-        ;
-        */
-/*
-dec_block:  
-         | ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF 
-         ;
-*/
-
 statement: var ASSIGN expression {
              string a, b, c;
              //check_symbol($1.name);
              if ($1.type == 0) { //Check if var is an int
                if ($3.type == 0) { //Check if expression is an int   
-                 //a = make_temp();
-                 //milhouse << ". " << a << endl;
-                 // milhouse << "= " << a << ", " << const_cast<char*>($3.name) << endl;
                  milhouse << "= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.name) << endl;
                }
                else { //if lhs = int and rhs = int array
-                 //a = make_temp();
                  b = make_temp();
-                 //milhouse << ". " << a << endl;
-                 //milhouse << "= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.index) << endl;  
                  milhouse << ". " << b << endl;
                  milhouse << "=[] " << b << ", " << const_cast<char*>($3.name) << a << ", " << const_cast<char*>($3.index) << endl;
                  milhouse << "= " << const_cast<char*>($1.name) << ", " << b << endl;
@@ -242,29 +198,10 @@ statement: var ASSIGN expression {
              }
              else { //Check if var is an int array
                if ($3.type == 0) { //Check if expression is an int [array := int]
-                 //a = make_temp();
-                 //b = make_temp();
-                 //milhouse << ". " << a << endl; 
-                 //milhouse << "= " << a << ", " << const_cast<char*>($1.index) << endl;
-                 //milhouse << ". " << b << endl; 
-                 //milhouse << "= " << b << ", " << const_cast<char*>($3.name) << endl;              
-                 //milhouse << "[]= " << const_cast<char*>($1.name) << ", " << a << ", " << b << endl;
-                 while(!index_stack.empty()) {
-                     // $1.index = make_temp().c_str();
-                    string temp = make_temp();
-                    // strcpy($1.index, temp.c_str());
-                    index_stack.pop();
-                 }
                  milhouse << "[]= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($1.index) << ", " << const_cast<char*>($3.name) << endl;
                }
                else { // int array = int array
-                 //a = make_temp();
-                 //b = make_temp();
                  c = make_temp();
-                 //milhouse << ". " << a << endl;
-                 //milhouse << "= " << a << ", " << const_cast<char*>($1.index) << endl;
-                 //milhouse << ". " << b << endl;
-                 //milhouse << "= " << b << ", " << const_cast<char*>($3.index) << endl;
                  milhouse << ". " << c << endl;
                  milhouse << "=[] " << c << ", " << const_cast<char*>($3.name) << ", " << const_cast<char*>($3.index) << endl;
                  milhouse << "[]= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($1.index) << ", " << c << endl;
@@ -272,9 +209,15 @@ statement: var ASSIGN expression {
             
              } 
            }
-         | IF bool_exp THEN statement SEMICOLON statement_block else_block ENDIF 
-         | WHILE bool_exp BEGINLOOP statement SEMICOLON statement_block ENDLOOP 
-         | DO BEGINLOOP statement SEMICOLON statement_block ENDLOOP WHILE bool_exp 
+         | IF bool_expr THEN statement SEMICOLON statement_block else_block ENDIF {
+
+           }
+         | WHILE bool_expr BEGINLOOP statement SEMICOLON statement_block ENDLOOP {
+
+           }
+         | DO BEGINLOOP statement SEMICOLON statement_block ENDLOOP WHILE bool_expr {
+  
+           }
          | READ var var_block {
              var_stack.push($2.name);
              while (!var_stack.empty()) {
@@ -283,9 +226,6 @@ statement: var ASSIGN expression {
                     var_stack.pop();
                 }
                 else {
-                    //string a = make_temp();
-                    //milhouse << ". " << a << endl;
-                    //milhouse << "= " << a << ", " << $2.index << endl;
                     milhouse << ".[]< " << var_stack.top() << ", "  <<  const_cast<char*>($2.index) << endl;
                     var_stack.pop();
                 }
@@ -300,9 +240,6 @@ statement: var ASSIGN expression {
                     var_stack.pop();
                 }
                 else {
-                    //string a = make_temp();
-                    //milhouse << ". " << a << endl;
-                    //milhouse << "= " << a << ", " << $2.index << endl;
                     milhouse << ".[]> " << var_stack.top() << ", "  <<  const_cast<char*>($2.index) << endl;
                     var_stack.pop();
                 }
@@ -327,19 +264,13 @@ var_block:
            } 
          ;
 
-bool_exp: relation_and_expr rel_or 
-        ;
+bool_expr: bool_expr OR relation_and_expr
+         | relation_and_expr
+         ;
 
-rel_or: OR relation_and_expr rel_or 
-      | 
-      ;
-
-relation_and_expr: relation_expr rel_and 
+relation_and_expr: relation_and_expr AND relation_expr
+                 | relation_expr
                  ;
-
-rel_and: AND relation_and_expr 
-       | 
-       ;
 
 relation_expr: rel_expr 
              | NOT rel_expr 
@@ -348,7 +279,7 @@ relation_expr: rel_expr
 rel_expr: expression comp expression 
         | TRUE 
         | FALSE 
-        | L_PAREN bool_exp R_PAREN 
+        | L_PAREN bool_expr R_PAREN 
         ;
 
 comp: EQ { $$ = const_cast<char*>("=="); } 
@@ -493,32 +424,9 @@ var: IDENT {
            $$.type = 1;
            //$$.val = symbol_table[$1].val;
            strcpy($$.index, $3.name);
-
-           string temp = const_cast<char*>($3.name);
-           if (find_symbol(temp)) {
-             index_stack.push($3.name);
-           }  
          }
 
-         
-
-         //string temp = make_temp();
-         //strcpy($$.name, temp.c_str());
-         //milhouse << ". " << temp << endl; 
-         //milhouse << "=[] " << temp << ", " << $1 << ", " << const_cast<char*>($3.name) << endl;
-         
-
-         //milhouse << ". " << const_cast<char*>($$.index) << endl;
-         /*
-         if ($3.type == 3) { //if type is a number
-           sprintf($$.index, "%d", $3.val);
-         }
-         else { //else type is an int, intarray, or function
-           strcpy($$.index, $3.name);
-         }
-         */
-       //}
-   }
+     }
    /* IDENT var_2 */
    ;
 
