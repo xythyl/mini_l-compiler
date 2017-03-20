@@ -241,14 +241,15 @@ statement: var ASSIGN expression {
                
              }
              else { //Check if var is an int array
-               if (symbol_table[$3.name].type == INT) { //Check if expression is an int
-                 a = make_temp();
-                 b = make_temp();
-                 milhouse << ". " << a << endl; 
-                 milhouse << "= " << a << ", " << const_cast<char*>($1.index) << endl;
-                 milhouse << ". " << b << endl; 
-                 milhouse << "= " << b << ", " << const_cast<char*>($3.name) << endl;              
-                 milhouse << "[]= " << const_cast<char*>($1.name) << ", " << a << ", " << b << endl;
+               if (symbol_table[$3.name].type == INT) { //Check if expression is an int [array := int]
+                 //a = make_temp();
+                 //b = make_temp();
+                 //milhouse << ". " << a << endl; 
+                 //milhouse << "= " << a << ", " << const_cast<char*>($1.index) << endl;
+                 //milhouse << ". " << b << endl; 
+                 //milhouse << "= " << b << ", " << const_cast<char*>($3.name) << endl;              
+                 //milhouse << "[]= " << const_cast<char*>($1.name) << ", " << a << ", " << b << endl;
+                 milhouse << "[]= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($1.index) << ", " << const_cast<char*>($3.name) << endl;
                }
                else { // int array = int array
                  a = make_temp();
@@ -276,10 +277,10 @@ statement: var ASSIGN expression {
                     var_stack.pop();
                 }
                 else {
-                    string a = make_temp();
-                    milhouse << ". " << a << endl;
-                    milhouse << "= " << a << ", " << $2.index << endl;
-                    milhouse << ".[]< " << var_stack.top() << ", "  <<  a << endl;
+                    //string a = make_temp();
+                    //milhouse << ". " << a << endl;
+                    //milhouse << "= " << a << ", " << $2.index << endl;
+                    milhouse << ".[]< " << var_stack.top() << ", "  <<  const_cast<char*>($2.index) << endl;
                     var_stack.pop();
                 }
              }
@@ -293,10 +294,10 @@ statement: var ASSIGN expression {
                     var_stack.pop();
                 }
                 else {
-                    string a = make_temp();
-                    milhouse << ". " << a << endl;
-                    milhouse << "= " << a << ", " << $2.index << endl;
-                    milhouse << ".[]> " << var_stack.top() << ", "  <<  a << endl;
+                    //string a = make_temp();
+                    //milhouse << ". " << a << endl;
+                    //milhouse << "= " << a << ", " << $2.index << endl;
+                    milhouse << ".[]> " << var_stack.top() << ", "  <<  const_cast<char*>($2.index) << endl;
                     var_stack.pop();
                 }
             }
@@ -352,27 +353,6 @@ comp: EQ { $$ = const_cast<char*>("=="); }
     | GTE { $$ = const_cast<char*>(">="); }
     ;
 
-/*
-expression: multiplicative_expr mult_expr 
-          ;
-
-mult_expr: ADD multiplicative_expr mult_expr 
-         | SUB multiplicative_expr mult_expr 
-         | 
-         ;
-
-multiplicative_expr: term mult_expr_term {
-                       strcpy($$.name,$1.name);
-                     } 
-                   ;
-
-mult_expr_term: MULT term mult_expr_term
-              | DIV term mult_expr_term
-              | MOD term mult_expr_term
-              | 
-              ;
-*/
-
 expression: expression ADD multiplicative_expr {
               string temp = make_temp();
               milhouse << ". " << temp << endl;
@@ -412,50 +392,20 @@ multiplicative_expr: multiplicative_expr MULT term {
                        strcpy($$.name,$1.name);
                      }
                    ;
-/*
-term: SUB term_minus {
-      // making it negative
-      // $$.val = $2.val;
-      $$.val = $2.val*-1;
-      strcpy($$.name,$2.name);
-    } 
-    | term_minus {
-      $$.val = $1.val;
-      strcpy($$.name, $1.name);
-    } 
-    | IDENT L_PAREN exp_comma_block R_PAREN 
-    ;
-
-term_minus: var {
-              $$.val = $1.val;
-              strcpy($$.name,$1.name);
-            }
-          | NUMBER {
-              //string temp = make_temp();
-              //milhouse << ". " << temp << endl;
-              //milhouse << "= " << temp << ", " << $1 << endl;
-              $$.val = $1;
-              $$.type = 3;
-              //$$.name = make_temp().c_str();
-              //strcpy($$.name, temp.c_str());
-              
-              sprintf($$.name, "%d", $1);
-            }
-          | L_PAREN expression R_PAREN {
-              strcpy($$.name, $2.name);
-            }
-          ;
-*/
 
 term: SUB var {
-        $$.val = $2.val;
+        $$.val = $2.val*-1;
         $$.type = $2.type;
-        strcpy($$.name,$2.name);
+        strcpy($$.name,make_temp().c_str());
+        milhouse << ". " << const_cast<char*>($$.name) << endl;
+        milhouse << "= " << const_cast<char*>($$.name) <<  ", " << const_cast<char*>($2.name) << endl;
       }
     | var {
         $$.val = $1.val;
         $$.type = $1.type;
-        strcpy($$.name,$1.name);
+        strcpy($$.name,make_temp().c_str());
+        milhouse << ". " << const_cast<char*>($$.name) << endl;
+        milhouse << "= " << const_cast<char*>($$.name) <<  ", " << const_cast<char*>($1.name) << endl;
       }
     | SUB NUMBER {
         $$.val = $2*-1;
@@ -467,6 +417,7 @@ term: SUB var {
     | NUMBER  {
         $$.val = $1;
         $$.type = 3;
+
         strcpy($$.name, make_temp().c_str());
         milhouse << ". " << const_cast<char*>($$.name) << endl;
         milhouse << "= " << const_cast<char*>($$.name) <<  ", " << $$.val << endl;
