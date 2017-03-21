@@ -126,7 +126,7 @@
 //%type<ident_str> comma_ident
 //%type<ident_str> declaration
 
-%type<attr> var expression term declaration statement multiplicative_expr
+%type<attr> var expression term declaration statement multiplicative_expr bool_expr relation_and_expr relation_expr rel_expr
 %type<ident_str> comp
 
 %%
@@ -264,22 +264,49 @@ var_block:
            } 
          ;
 
-bool_expr: bool_expr OR relation_and_expr
-         | relation_and_expr
+bool_expr: bool_expr OR relation_and_expr {
+             string temp = make_temp();
+             strcpy($$.name, temp.c_str());
+             milhouse << ". " << temp << endl;
+             milhouse << "|| " << const_cast<char*>($1.name) << " " << temp << const_cast<char*>($3.name) << endl;
+           }
+         | relation_and_expr {
+             strcpy($$.name, $1.name);
+           }
          ;
 
-relation_and_expr: relation_and_expr AND relation_expr
-                 | relation_expr
+relation_and_expr: relation_and_expr AND relation_expr {
+                    string temp = make_temp();
+                    strcpy($$.name, temp.c_str());
+                    milhouse << ". " << temp << endl;
+                    milhouse << "&& " << const_cast<char*>($1.name) << " " << temp << const_cast<char*>($3.name) << endl;
+                   }
+                 | relation_expr {
+                       strcpy($$.name, $1.name);
+                    }
                  ;
 
-relation_expr: rel_expr 
-             | NOT rel_expr 
+relation_expr: rel_expr {
+                    strcpy($$.name, $1.name);
+                } 
+             | NOT rel_expr {
+                    string temp = make_temp();
+                    strcpy($$.name, temp.c_str());
+                    milhouse << "! " << temp << const_cast<char*>($2.name) << endl;
+                }
              ;
 
-rel_expr: expression comp expression 
+rel_expr: expression comp expression {
+          string temp = make_temp();
+          strcpy($$.name, temp.c_str());
+          milhouse << ". " << temp << endl;
+          milhouse << $2 << " " << const_cast<char*>($1.name) << " " << temp << const_cast<char*>($3.name) << endl;
+            }
         | TRUE 
         | FALSE 
-        | L_PAREN bool_expr R_PAREN 
+        | L_PAREN bool_expr R_PAREN {
+                strcpy($$.name, $2.name);
+            }
         ;
 
 comp: EQ { $$ = const_cast<char*>("=="); } 
