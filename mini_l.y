@@ -29,6 +29,10 @@
   enum symbol_type {INT, INTARRAY, FUNC};
   enum CONTEXT {READING, WRITING};
 
+  struct Func {
+    string name;
+  };
+
   struct Sym {
     int val;
     int size;
@@ -40,12 +44,6 @@
     {}
   };
 
-  struct func {
-    string name;
-    symbol_type type;
-
-  };
-
   extern FILE *yyin;
   int yylex(void);
   void yyerror(const char *message);
@@ -53,7 +51,8 @@
   extern int currPos;
 
   stack<string> prog_name;
-  stack < map < string, Sym > > symbol_table_stack;
+  stack <map<string, Sym> > symbol_table_stack;
+  stack < map < string, Func > > function_table_stack;
   stack<string> ident_stack; // using
   stack<string> var_stack; // using
   stack<string> exp_stack; // using
@@ -78,7 +77,7 @@
   string make_label();
   char* make_temp2();
   map<string, Sym> symbol_table;
-  map<string, func> func_table;
+  map<string, Func> func_table;
 
   stringstream milhouse;
   ostringstream out_code;
@@ -151,6 +150,12 @@ function: FUNCTION IDENT {milhouse << "func " << string($2) << endl;} SEMICOLON 
             }
           } 
           END_PARAMS  BEGIN_LOCALS declaration_block END_LOCALS BEGIN_BODY statement SEMICOLON statement_block END_BODY {
+           /* 
+            milhouse << "endfunc\n";
+            out_code << milhouse.rdbuf();
+            milhouse.clear();
+            milhouse.str(" ");
+          */
             out_code << "endfunc\n";
             symbol_table.clear();
           }
@@ -281,10 +286,29 @@ statement: var ASSIGN expression {
                 milhouse.clear();
                 milhouse.str(" ");
            }
-         | DO BEGINLOOP statement SEMICOLON statement_block ENDLOOP WHILE bool_expr {
+          | DO BEGINLOOP {
+             string start = make_label();
+             label_stack.push(start);
+             out_code << ": " << start << endl;
+             out_code << milhouse.rdbuf();
+             milhouse.clear();
+             milhouse.str(" ");
 
-
-
+            }
+           statement {
+             /*string start = make_label();
+             label_stack.push(start);
+             out_code << ": " << start <<" %%%%%%%%%%% "<< endl;
+             out_code << milhouse.rdbuf();
+             milhouse.clear();
+             milhouse.str(" ");
+             */
+           }
+           SEMICOLON statement_block ENDLOOP WHILE bool_expr {
+             string start = label_stack.top();
+             milhouse << "?:= " << start << ", " << const_cast<char*>($10.name) << endl;
+             label_stack.pop(); 
+             
              out_code << milhouse.rdbuf();
              milhouse.clear();
              milhouse.str(" ");
@@ -323,6 +347,7 @@ statement: var ASSIGN expression {
          }
          | CONTINUE {
              //string label = make_label(); 
+             //label_stack.pop();
              milhouse << ":= " << label_stack.top() << endl;
              //milhouse << ": " << label_stack.top() << endl;
              //label_stack.pop();
@@ -396,8 +421,18 @@ rel_expr: expression comp expression {
           milhouse << ". " << temp << endl;
           milhouse << $2 << " " << temp << ", " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.name) << endl;
             }
-        | TRUE 
-        | FALSE 
+        | TRUE {
+            string temp = make_temp();
+            strcpy($$.name, temp.c_str());
+            milhouse << ". " << temp << endl;
+            milhouse << "= " << temp << ", " << "1" << endl;
+          }
+        | FALSE {
+            string temp = make_temp();
+            strcpy($$.name, temp.c_str());
+            milhouse << ". " << temp << endl;
+            milhouse << "= " << temp << ", " << "0" << endl;
+          }
         | L_PAREN bool_expr R_PAREN {
                 strcpy($$.name, $2.name);
             }
@@ -550,23 +585,22 @@ exp_comma_block2:
 */
 
 var: IDENT {
-       //check_symbol($1);
-       //if($1.type == 1) {
-         //yyerror("Symbol is of type int array");
-       //}
-       //else {
+       check_symbol($1);
+       if(symbol_table[$1].type == INTARRAY) {
+         yyerror("Symbol is of type int array");
+       }
+       else {
          strcpy($$.name,$1);
          $$.type = 0;
          //$$.val = symbol_table[$1].val;
-       //}
+       }
      }
    | IDENT L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
-       //check_symbol($1);
-       //if($1.type == 0) {
-         //yyerror("Symbol is of type int");
-       //}
-       //else {
-         
+       check_symbol($1);
+       if(symbol_table[$1].type == INT) {
+         yyerror("Symbol is of type int");
+       }
+       else {
          if ($3.type == 1) {
            string temp = make_temp();
            $$.type = 1;
@@ -584,7 +618,7 @@ var: IDENT {
            //$$.val = symbol_table[$1].val;
            strcpy($$.index, $3.name);
          }
-
+       }
      }
    /* IDENT var_2 */
    ;

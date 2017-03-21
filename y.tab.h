@@ -103,7 +103,7 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 92 "mini_l.y"
+#line 91 "mini_l.y"
 
   char* ident_str;
   int num_val;
