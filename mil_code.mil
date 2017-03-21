@@ -6,22 +6,29 @@ func main
 = __temp__0, 1
 = i, __temp__0
 . __temp__1
-= __temp__1, 3
+= __temp__1, 1
 = n, __temp__1
 . __temp__2
 = __temp__2, 4
 = x, __temp__2
+: __label__2
 . __temp__3
-= __temp__3, i
+= __temp__3, n
 . __temp__4
-= __temp__4, n
+= __temp__4, 4
 . __temp__5
 < __temp__5, __temp__3, __temp__4
 ?:= __label__0, __temp__5
 := __label__1
 : __label__0
-:= __label__1
-.> i
+.> n
+. __temp__6
+= __temp__6, n
+. __temp__7
+= __temp__7, 1
+. __temp__8
++ __temp__8, __temp__6, __temp__7
+= n, __temp__8
+ := __label__2
 : __label__1
-.> x
 endfunc

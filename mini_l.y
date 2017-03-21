@@ -80,7 +80,8 @@
   map<string, Sym> symbol_table;
   map<string, func> func_table;
 
-  ostringstream milhouse;
+  stringstream milhouse;
+  ostringstream out_code;
 
   int temp_cnt = 0;
   int label_cnt = 0;
@@ -150,7 +151,7 @@ function: FUNCTION IDENT {milhouse << "func " << string($2) << endl;} SEMICOLON 
             }
           } 
           END_PARAMS  BEGIN_LOCALS declaration_block END_LOCALS BEGIN_BODY statement SEMICOLON statement_block END_BODY {
-            milhouse << "endfunc\n";
+            out_code << "endfunc\n";
             symbol_table.clear();
           }
         ;
@@ -223,7 +224,10 @@ statement: var ASSIGN expression {
                }*/
             
              } 
-           }
+             out_code << milhouse.rdbuf();
+             milhouse.clear();
+             milhouse.str(" ");
+          }
          | IF bool_expr THEN {
              string start = make_label();
              string endif = make_label();
@@ -235,12 +239,55 @@ statement: var ASSIGN expression {
            statement SEMICOLON statement_block else_block ENDIF {
              milhouse << ": " << label_stack.top() << endl;
              label_stack.pop();
-           }
-         | WHILE bool_expr BEGINLOOP statement SEMICOLON statement_block ENDLOOP {
+             
+             out_code << milhouse.rdbuf();
+             milhouse.clear();
+             milhouse.str(" ");
 
            }
+          | WHILE bool_expr BEGINLOOP {
+
+              string conditional = make_label();
+              string endlabel = make_label();
+              string start = make_label();
+              out_code << ": " << start << endl;
+
+              out_code << milhouse.rdbuf();
+              milhouse.clear();
+              milhouse.str(" ");
+            
+              milhouse << "?:= " << conditional << ", " << const_cast<char*>($2.name) << endl;
+              milhouse << ":= " << endlabel << endl;
+              milhouse << ": " << conditional << endl;
+
+              label_stack.push(start);
+              label_stack.push(endlabel);
+
+            } statement SEMICOLON statement_block ENDLOOP {
+                out_code << milhouse.rdbuf();
+                milhouse.clear();
+                milhouse.str(" ");
+
+                string endlabel = label_stack.top();
+                label_stack.pop();
+                string start = label_stack.top();
+                label_stack.pop();
+
+                milhouse << ":= " << start << endl;
+                milhouse << ": " << endlabel << endl;
+ 
+
+                out_code << milhouse.rdbuf();
+                milhouse.clear();
+                milhouse.str(" ");
+           }
          | DO BEGINLOOP statement SEMICOLON statement_block ENDLOOP WHILE bool_expr {
-  
+
+
+
+             out_code << milhouse.rdbuf();
+             milhouse.clear();
+             milhouse.str(" ");
            }
          | READ var var_block {
              var_stack.push($2.name);
@@ -254,7 +301,9 @@ statement: var ASSIGN expression {
                     var_stack.pop();
                 }
              }
-
+             out_code << milhouse.rdbuf();
+             milhouse.clear();
+             milhouse.str(" ");
           } 
          | WRITE var var_block {
             var_stack.push($2.name);
@@ -268,6 +317,9 @@ statement: var ASSIGN expression {
                     var_stack.pop();
                 }
             }
+            out_code << milhouse.rdbuf();
+            milhouse.clear();
+            milhouse.str(" ");
          }
          | CONTINUE {
              //string label = make_label(); 
@@ -275,12 +327,18 @@ statement: var ASSIGN expression {
              //milhouse << ": " << label_stack.top() << endl;
              //label_stack.pop();
              //label_stack.push(label);
-         }
+             out_code << milhouse.rdbuf();
+             milhouse.clear();
+             milhouse.str(" ");
+          }
          | RETURN expression {
              $$.val = $2.val;
              strcpy($$.name,$2.name);
              milhouse << "ret " << const_cast<char*>($2.name) << endl;
-          }
+             out_code << milhouse.rdbuf();
+             milhouse.clear();
+             milhouse.str(" ");
+         }
          ;
 
 else_block: 
@@ -543,7 +601,7 @@ int main (int argc, char **argv) {
   yyparse();
   ofstream file;
   file.open("mil_code.mil");
-  file << milhouse.str();
+  file << out_code.str();
   file.close();
   return 0;
 }

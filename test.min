@@ -10,14 +10,12 @@ endlocals
 
 beginbody
   i:=1;
-  n:=3;
+  n:=1;
   x:=4;
-
-  if i < n then
-    continue;
-    write i;
-  endif;
-
-  write x;
+  
+  while n < 4 beginloop
+    write n;
+    n := n + 1;
+  endloop;
 
 endbody
