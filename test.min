@@ -1,27 +1,30 @@
 ## errors working 1,4,6,7,8,9 think 5 works
 ## errors not working 2,3,5
-function error;
+function m;
 beginparams
 endparams
 beginlocals
+x: integer;
+endlocals
+beginbody
+write x;
+endbody
 
-r : array [0] of integer;
-a : integer;
-x : array[10] of integer;
-##a : array [10] of integer;
-b : integer;
-##while : integer;
+function main;
+beginparams
+endparams
+beginlocals
+x: integer;
+k: integer;
 endlocals
 beginbody
 
-x[1] := 4;
+x := 2;
 
-b[2] := 4 + x[1];
-##c[1] := a;
+k := -(x + 1 - (-2));
+write k;
 
-##a := fib(1);
-
-##i := 5;
-
-##continue;
 endbody
+
+
+

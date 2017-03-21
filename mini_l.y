@@ -31,6 +31,9 @@
 
   struct Func {
     string name;
+    Func(): name() {}
+    Func(string n) 
+    : name(n){}
   };
 
   struct Sym {
@@ -70,7 +73,9 @@
   vector<string> vars;
   
   void add_symbol(Sym sym);
+  void add_func(Func func);
   void check_symbol(string name);
+  void check_func(string name);
   bool find_symbol(string name);
   void print_declarations();
   string make_temp();
@@ -85,6 +90,7 @@
   int temp_cnt = 0;
   int label_cnt = 0;
   int param_cnt = 0;
+  bool main_exists = 0;
   
 %}
 
@@ -135,7 +141,7 @@
 
 %%
 
-start: program 
+start: program {if(!main_exists){yyerror("error: main not declared");}}
      ;
 
 program: 
@@ -158,6 +164,14 @@ function: FUNCTION IDENT {milhouse << "func " << string($2) << endl;} SEMICOLON 
           */
             out_code << "endfunc\n";
             symbol_table.clear();
+            if (strcmp($2, "main")==0) {
+              main_exists = 1;      
+            }
+            Func f($2);
+            add_func(f);
+            while (!param_stack.empty()) {
+              param_stack.pop();
+            }
           }
         ;
 
@@ -348,14 +362,19 @@ statement: var ASSIGN expression {
          | CONTINUE {
              //string label = make_label(); 
              //label_stack.pop();
-             milhouse << ":= " << label_stack.top() << endl;
-             //milhouse << ": " << label_stack.top() << endl;
-             //label_stack.pop();
-             //label_stack.push(label);
-             out_code << milhouse.rdbuf();
-             milhouse.clear();
-             milhouse.str(" ");
-          }
+             if (!label_stack.empty()) {
+               milhouse << ":= " << label_stack.top() << endl;
+               //milhouse << ": " << label_stack.top() << endl;
+               //label_stack.pop();
+               //label_stack.push(label);
+               out_code << milhouse.rdbuf();
+               milhouse.clear();
+               milhouse.str(" ");
+             }
+             else {
+               yyerror("error: cannot use continue outside a loop");
+             }
+           }
          | RETURN expression {
              $$.val = $2.val;
              strcpy($$.name,$2.name);
@@ -492,15 +511,32 @@ term: SUB var {
         $$.val = $2.val*-1;
         $$.type = $2.type;
         if ($2.type != 1) {// if int
+          string zero = make_temp();
+          string num = make_temp();
+          milhouse << ". " << zero << endl;
+          milhouse << "= " << zero << ", " << "0" << endl;
+          milhouse << ". " << num << endl;
+          milhouse << "= " << num << ", " << const_cast<char*>($2.name) << endl;
+
           strcpy($$.name,make_temp().c_str());
           milhouse << ". " << const_cast<char*>($$.name) << endl;
-          milhouse << "= " << const_cast<char*>($$.name) <<  ", " << const_cast<char*>($2.name) << endl;
+          milhouse << "- " << const_cast<char*>($$.name) <<  ", " << zero << ", " << num << endl;
          }        
         else if ($2.type == 1) { // if array
           //b = make_temp();
+          string zero = make_temp();
+          string num = make_temp();
+          milhouse << ". " << zero << endl;
+          milhouse << "= " << zero << ", " << "0" << endl;
+          milhouse << ". " << num << endl;
+          milhouse << ". " << num << endl;
+          milhouse << "=[] " << num << ", " << const_cast<char*>($2.name) <<  ", " << const_cast<char*>($2.index) << endl;
+
+
+
           strcpy($$.name,make_temp().c_str());
           milhouse << ". " <<  const_cast<char*>($$.name)<< endl;
-          milhouse << "=[] " << const_cast<char*>($$.name) << ", " << const_cast<char*>($2.name) <<  ", " << const_cast<char*>($2.index) << endl;
+          milhouse << "- " << const_cast<char*>($$.name) << ", " << zero <<  ", " << num << endl;
         }
 
       }
@@ -525,9 +561,16 @@ term: SUB var {
         $$.val = $2*-1;
         // $$.type = 3;
         $$.type = 0;
+        string zero = make_temp();
+        string num = make_temp();
+        milhouse << ". " << zero << endl;
+        milhouse << "= " << zero << ", " << "0" << endl;
+        milhouse << ". " << num << endl;
+        milhouse << "= " << num << ", " << $2 << endl;
+
         strcpy($$.name, make_temp().c_str());
         milhouse << ". " << const_cast<char*>($$.name) << endl;
-        milhouse << "= " << const_cast<char*>($$.name) <<  ", " << $$.val << endl;
+        milhouse << "- " << const_cast<char*>($$.name) <<  ", " << zero << ", "<< num << endl;
      }
     | NUMBER  {
         $$.val = $1;
@@ -540,12 +583,21 @@ term: SUB var {
         milhouse << "= " << const_cast<char*>($$.name) <<  ", " << $$.val << endl;
       }
      | SUB L_PAREN expression R_PAREN {
-       /* later */ 
+
+       string zero = make_temp();
+
+       milhouse << ". " << zero << endl;
+       milhouse << "= " << zero << ", " << "0"<< endl;
+        
+       strcpy($$.name, make_temp().c_str());
+       milhouse << ". " << const_cast<char*>($$.name) << endl;
+       milhouse << "- " << const_cast<char*>($$.name) <<  ", " << zero << ", "<< const_cast<char*>($3.name) << endl;
       }
     | L_PAREN expression R_PAREN {
         strcpy($$.name, $2.name);
     }
     | IDENT L_PAREN expression exp_comma_block R_PAREN {
+        check_func(const_cast<char*>($1));
         exp_stack.push($3.name); 
         while (!exp_stack.empty()){
           milhouse << "param " << exp_stack.top() << endl;
@@ -557,6 +609,7 @@ term: SUB var {
         strcpy($$.name,temp.c_str());
       }
     | IDENT L_PAREN R_PAREN {
+        check_func(const_cast<char*>($1));
         string temp = make_temp();
         milhouse << ". " << temp << endl;
         milhouse << "call " << const_cast<char*>($1) << ", " << temp << endl;
@@ -658,6 +711,17 @@ void add_symbol(Sym s) {
   }
 }
 
+void add_func(Func f) {
+  if (func_table.find(f.name) == func_table.end()) {
+    func_table[f.name] = f;
+  }
+  else {
+    string error = "error: function already declared: " + f.name;
+    yyerror(error);
+  }
+}
+
+
 bool find_symbol(string name) {
   if (symbol_table.find(name) != symbol_table.end()) {
     return true; 
@@ -670,6 +734,13 @@ bool find_symbol(string name) {
 void check_symbol(string name) {
   if(symbol_table.find(name) == symbol_table.end()) {
     string error = "Symbol not declared: " + name;
+    yyerror(error);
+  }
+}
+
+void check_func(string name) {
+  if(func_table.find(name) == func_table.end()) {
+    string error = "Function not declared: " + name;
     yyerror(error);
   }
 }
