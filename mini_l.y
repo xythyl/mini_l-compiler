@@ -27,7 +27,6 @@
   //#define YYPRINT(file, type, value) yyprint (file, type value)
   //yydebug = 1;
   enum symbol_type {INT, INTARRAY, FUNC};
-  enum CONTEXT {READING, WRITING};
 
   struct Func {
     string name;
@@ -53,34 +52,19 @@
   extern int currLine;
   extern int currPos;
 
-  stack<string> prog_name;
-  stack <map<string, Sym> > symbol_table_stack;
-  stack < map < string, Func > > function_table_stack;
   stack<string> ident_stack; // using
   stack<string> var_stack; // using
   stack<string> exp_stack; // using
   stack<string> param_stack; //using
   stack<string> label_stack; //using
-  stack<string> comp_stack; 
-  stack<string> index_stack;
-  stack<string> reverse_stack;
-  stack<int> size_stack;
-  //stack<int> label_stack;
-  stack<int> loop_stack;
-  stack<int> predicate_stack;
-
-  vector<string> functions;
-  vector<string> vars;
   
   void add_symbol(Sym sym);
   void add_func(Func func);
   void check_symbol(string name);
   void check_func(string name);
-  bool find_symbol(string name);
   void print_declarations();
   string make_temp();
   string make_label();
-  char* make_temp2();
   map<string, Sym> symbol_table;
   map<string, Func> func_table;
 
@@ -156,12 +140,7 @@ function: FUNCTION IDENT {milhouse << "func " << string($2) << endl;} SEMICOLON 
             }
           } 
           END_PARAMS  BEGIN_LOCALS declaration_block END_LOCALS BEGIN_BODY statement SEMICOLON statement_block END_BODY {
-           /* 
-            milhouse << "endfunc\n";
-            out_code << milhouse.rdbuf();
-            milhouse.clear();
-            milhouse.str(" ");
-          */
+
             out_code << "endfunc\n";
             symbol_table.clear();
             if (strcmp($2, "main")==0) {
@@ -209,39 +188,18 @@ declaration: IDENT comma_ident COLON INTEGER {
 
 comma_ident: 
             | COMMA IDENT comma_ident {
-               //Sym sym(0,0,$2,INT);
-               //add_symbol(sym);
                ident_stack.push($2);
                param_stack.push($2);
              }
            ;
 
 statement: var ASSIGN expression {
-             //string a, b, c;
-             //check_symbol($1.name);
              if ($1.type == 0) { //Check if var is an int
-               //if ($3.type == 0) { //Check if expression is an int   
                  milhouse << "= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.name) << endl;
-               /*}
-               else { //if lhs = int and rhs = int array
-                 b = make_temp();
-                 milhouse << ". " << b << endl;
-                 milhouse << "=[] " << b << ", " << const_cast<char*>($3.name) << a << ", " << const_cast<char*>($3.index) << endl;
-                 milhouse << "= " << const_cast<char*>($1.name) << ", " << b << endl;
-               }*/
-               
+              
              }
              else { //Check if var is an int array
-               //if ($3.type == 0) { //Check if expression is an int [array := int]
                  milhouse << "[]= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($1.index) << ", " << const_cast<char*>($3.name) << endl;
-               /*}
-               else { // int array = int array
-                 c = make_temp();
-                 milhouse << ". " << c << endl;
-                 milhouse << "=[] " << c << ", " << const_cast<char*>($3.name) << ", " << const_cast<char*>($3.index) << endl;
-                 milhouse << "[]= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($1.index) << ", " << c << endl;
-               }*/
-            
              } 
              out_code << milhouse.rdbuf();
              milhouse.clear();
@@ -309,18 +267,9 @@ statement: var ASSIGN expression {
              milhouse.str(" ");
 
             }
-           statement {
-             /*string start = make_label();
-             label_stack.push(start);
-             out_code << ": " << start <<" %%%%%%%%%%% "<< endl;
-             out_code << milhouse.rdbuf();
-             milhouse.clear();
-             milhouse.str(" ");
-             */
-           }
-           SEMICOLON statement_block ENDLOOP WHILE bool_expr {
+           statement SEMICOLON statement_block ENDLOOP WHILE bool_expr {
              string start = label_stack.top();
-             milhouse << "?:= " << start << ", " << const_cast<char*>($10.name) << endl;
+             milhouse << "?:= " << start << ", " << const_cast<char*>($9.name) << endl;
              label_stack.pop(); 
              
              out_code << milhouse.rdbuf();
@@ -360,13 +309,8 @@ statement: var ASSIGN expression {
             milhouse.str(" ");
          }
          | CONTINUE {
-             //string label = make_label(); 
-             //label_stack.pop();
              if (!label_stack.empty()) {
                milhouse << ":= " << label_stack.top() << endl;
-               //milhouse << ": " << label_stack.top() << endl;
-               //label_stack.pop();
-               //label_stack.push(label);
                out_code << milhouse.rdbuf();
                milhouse.clear();
                milhouse.str(" ");
@@ -397,7 +341,6 @@ else_block:
 
 var_block:  
          | COMMA var var_block {
-             // vars.push_back($2.name);
              var_stack.push($2.name);
            } 
          ;
@@ -517,7 +460,6 @@ term: SUB var {
           milhouse << "= " << zero << ", " << "0" << endl;
           milhouse << ". " << num << endl;
           milhouse << "= " << num << ", " << const_cast<char*>($2.name) << endl;
-
           strcpy($$.name,make_temp().c_str());
           milhouse << ". " << const_cast<char*>($$.name) << endl;
           milhouse << "- " << const_cast<char*>($$.name) <<  ", " << zero << ", " << num << endl;
@@ -531,9 +473,6 @@ term: SUB var {
           milhouse << ". " << num << endl;
           milhouse << ". " << num << endl;
           milhouse << "=[] " << num << ", " << const_cast<char*>($2.name) <<  ", " << const_cast<char*>($2.index) << endl;
-
-
-
           strcpy($$.name,make_temp().c_str());
           milhouse << ". " <<  const_cast<char*>($$.name)<< endl;
           milhouse << "- " << const_cast<char*>($$.name) << ", " << zero <<  ", " << num << endl;
@@ -622,20 +561,6 @@ exp_comma_block: COMMA expression exp_comma_block {
                  }
                |
                ;
-/*
-exp_comma_block: expression
-               | expression COMMA exp_comma_block
-               ;
-*/
-/*
-exp_comma_block: expression exp_comma_block2 
-               |  
-               ;
-
-exp_comma_block2: 
-                | COMMA expression exp_comma_block2 
-                ;
-*/
 
 var: IDENT {
        check_symbol($1);
@@ -658,7 +583,6 @@ var: IDENT {
            string temp = make_temp();
            $$.type = 1;
            //strcpy($$.name, temp.c_str());
-           
            strcpy($$.index, temp.c_str());
            strcpy($$.name, $1);
 
@@ -673,7 +597,6 @@ var: IDENT {
          }
        }
      }
-   /* IDENT var_2 */
    ;
 
 %%
@@ -718,16 +641,6 @@ void add_func(Func f) {
   else {
     string error = "error: function already declared: " + f.name;
     yyerror(error);
-  }
-}
-
-
-bool find_symbol(string name) {
-  if (symbol_table.find(name) != symbol_table.end()) {
-    return true; 
-  }
-  else {
-    return false;
   }
 }
 
