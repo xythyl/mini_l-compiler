@@ -30,8 +30,12 @@ func main
 = __temp__8, 0
 . __temp__9
 =[] __temp__9, k, __temp__8
-[]= j, __temp__7, __temp__9
 . __temp__10
 = __temp__10, 1
-.[]> j, __temp__10
+. __temp__11
++ __temp__11, __temp__9, __temp__10
+[]= j, __temp__7, __temp__11
+. __temp__12
+= __temp__12, 1
+.[]> j, __temp__12
 endfunc

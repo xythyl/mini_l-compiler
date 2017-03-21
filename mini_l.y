@@ -185,27 +185,27 @@ statement: var ASSIGN expression {
              string a, b, c;
              //check_symbol($1.name);
              if ($1.type == 0) { //Check if var is an int
-               if ($3.type == 0) { //Check if expression is an int   
+               //if ($3.type == 0) { //Check if expression is an int   
                  milhouse << "= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.name) << endl;
-               }
+               /*}
                else { //if lhs = int and rhs = int array
                  b = make_temp();
                  milhouse << ". " << b << endl;
                  milhouse << "=[] " << b << ", " << const_cast<char*>($3.name) << a << ", " << const_cast<char*>($3.index) << endl;
                  milhouse << "= " << const_cast<char*>($1.name) << ", " << b << endl;
-               }
+               }*/
                
              }
              else { //Check if var is an int array
-               if ($3.type == 0) { //Check if expression is an int [array := int]
+               //if ($3.type == 0) { //Check if expression is an int [array := int]
                  milhouse << "[]= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($1.index) << ", " << const_cast<char*>($3.name) << endl;
-               }
+               /*}
                else { // int array = int array
                  c = make_temp();
                  milhouse << ". " << c << endl;
                  milhouse << "=[] " << c << ", " << const_cast<char*>($3.name) << ", " << const_cast<char*>($3.index) << endl;
                  milhouse << "[]= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($1.index) << ", " << c << endl;
-               }
+               }*/
             
              } 
            }
@@ -335,11 +335,18 @@ multiplicative_expr: multiplicative_expr MULT term {
 term: SUB var {
         $$.val = $2.val*-1;
         $$.type = $2.type;
-        if ($2.type != 1) {
+        if ($2.type != 1) {// if int
           strcpy($$.name,make_temp().c_str());
           milhouse << ". " << const_cast<char*>($$.name) << endl;
           milhouse << "= " << const_cast<char*>($$.name) <<  ", " << const_cast<char*>($2.name) << endl;
-         }
+         }        
+        else if ($2.type == 1) { // if array
+          //b = make_temp();
+          strcpy($$.name,make_temp().c_str());
+          milhouse << ". " <<  const_cast<char*>($$.name)<< endl;
+          milhouse << "=[] " << const_cast<char*>($$.name) << ", " << const_cast<char*>($2.name) <<  ", " << const_cast<char*>($2.index) << endl;
+        }
+
       }
     | var {
         $$.val = $1.val;
@@ -350,6 +357,13 @@ term: SUB var {
           milhouse << ". " << const_cast<char*>($$.name) << endl;
           milhouse << "= " << const_cast<char*>($$.name) <<  ", " << const_cast<char*>($1.name) << endl;
         }
+        else if ($1.type == 1) { // if array
+          //b = make_temp();
+          strcpy($$.name,make_temp().c_str());
+          milhouse << ". " <<  const_cast<char*>($$.name)<< endl;
+          milhouse << "=[] " << const_cast<char*>($$.name) << ", " << const_cast<char*>($1.name) << ", " << const_cast<char*>($1.index) << endl;
+        }
+
       }
     | SUB NUMBER {
         $$.val = $2*-1;

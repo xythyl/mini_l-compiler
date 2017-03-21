@@ -23,7 +23,7 @@ beginbody
   i := k[0];
   write i;
 
-  j[1] := k[0];
+  j[1] := k[0] + 1;
   write j[1];
 
 endbody

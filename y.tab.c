@@ -599,8 +599,8 @@ static const yytype_uint16 yyrline[] =
      235,   248,   249,   255,   256,   260,   261,   267,   268,   271,
      272,   275,   276,   279,   280,   281,   282,   285,   286,   287,
      288,   289,   290,   293,   299,   305,   311,   317,   323,   329,
-     335,   344,   354,   362,   372,   373,   376,   377,   380,   381,
-     393,   404
+     335,   351,   368,   376,   386,   387,   390,   391,   394,   395,
+     407,   418
 };
 #endif
 
@@ -1654,27 +1654,27 @@ yyreduce:
              string a, b, c;
              //check_symbol($1.name);
              if ((yyvsp[(1) - (3)].attr).type == 0) { //Check if var is an int
-               if ((yyvsp[(3) - (3)].attr).type == 0) { //Check if expression is an int   
+               //if ($3.type == 0) { //Check if expression is an int   
                  milhouse << "= " << const_cast<char*>((yyvsp[(1) - (3)].attr).name) << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).name) << endl;
-               }
+               /*}
                else { //if lhs = int and rhs = int array
                  b = make_temp();
                  milhouse << ". " << b << endl;
-                 milhouse << "=[] " << b << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).name) << a << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).index) << endl;
-                 milhouse << "= " << const_cast<char*>((yyvsp[(1) - (3)].attr).name) << ", " << b << endl;
-               }
+                 milhouse << "=[] " << b << ", " << const_cast<char*>($3.name) << a << ", " << const_cast<char*>($3.index) << endl;
+                 milhouse << "= " << const_cast<char*>($1.name) << ", " << b << endl;
+               }*/
                
              }
              else { //Check if var is an int array
-               if ((yyvsp[(3) - (3)].attr).type == 0) { //Check if expression is an int [array := int]
+               //if ($3.type == 0) { //Check if expression is an int [array := int]
                  milhouse << "[]= " << const_cast<char*>((yyvsp[(1) - (3)].attr).name) << ", " << const_cast<char*>((yyvsp[(1) - (3)].attr).index) << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).name) << endl;
-               }
+               /*}
                else { // int array = int array
                  c = make_temp();
                  milhouse << ". " << c << endl;
-                 milhouse << "=[] " << c << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).name) << ", " << const_cast<char*>((yyvsp[(3) - (3)].attr).index) << endl;
-                 milhouse << "[]= " << const_cast<char*>((yyvsp[(1) - (3)].attr).name) << ", " << const_cast<char*>((yyvsp[(1) - (3)].attr).index) << ", " << c << endl;
-               }
+                 milhouse << "=[] " << c << ", " << const_cast<char*>($3.name) << ", " << const_cast<char*>($3.index) << endl;
+                 milhouse << "[]= " << const_cast<char*>($1.name) << ", " << const_cast<char*>($1.index) << ", " << c << endl;
+               }*/
             
              } 
            }
@@ -1874,17 +1874,24 @@ yyreduce:
     {
         (yyval.attr).val = (yyvsp[(2) - (2)].attr).val*-1;
         (yyval.attr).type = (yyvsp[(2) - (2)].attr).type;
-        if ((yyvsp[(2) - (2)].attr).type != 1) {
+        if ((yyvsp[(2) - (2)].attr).type != 1) {// if int
           strcpy((yyval.attr).name,make_temp().c_str());
           milhouse << ". " << const_cast<char*>((yyval.attr).name) << endl;
           milhouse << "= " << const_cast<char*>((yyval.attr).name) <<  ", " << const_cast<char*>((yyvsp[(2) - (2)].attr).name) << endl;
-         }
+         }        
+        else if ((yyvsp[(2) - (2)].attr).type == 1) { // if array
+          //b = make_temp();
+          strcpy((yyval.attr).name,make_temp().c_str());
+          milhouse << ". " <<  const_cast<char*>((yyval.attr).name)<< endl;
+          milhouse << "=[] " << const_cast<char*>((yyval.attr).name) << ", " << const_cast<char*>((yyvsp[(2) - (2)].attr).name) <<  ", " << const_cast<char*>((yyvsp[(2) - (2)].attr).index) << endl;
+        }
+
       }
     break;
 
   case 51:
 /* Line 1792 of yacc.c  */
-#line 344 "mini_l.y"
+#line 351 "mini_l.y"
     {
         (yyval.attr).val = (yyvsp[(1) - (1)].attr).val;
         (yyval.attr).type = (yyvsp[(1) - (1)].attr).type;
@@ -1894,12 +1901,19 @@ yyreduce:
           milhouse << ". " << const_cast<char*>((yyval.attr).name) << endl;
           milhouse << "= " << const_cast<char*>((yyval.attr).name) <<  ", " << const_cast<char*>((yyvsp[(1) - (1)].attr).name) << endl;
         }
+        else if ((yyvsp[(1) - (1)].attr).type == 1) { // if array
+          //b = make_temp();
+          strcpy((yyval.attr).name,make_temp().c_str());
+          milhouse << ". " <<  const_cast<char*>((yyval.attr).name)<< endl;
+          milhouse << "=[] " << const_cast<char*>((yyval.attr).name) << ", " << const_cast<char*>((yyvsp[(1) - (1)].attr).name) << ", " << const_cast<char*>((yyvsp[(1) - (1)].attr).index) << endl;
+        }
+
       }
     break;
 
   case 52:
 /* Line 1792 of yacc.c  */
-#line 354 "mini_l.y"
+#line 368 "mini_l.y"
     {
         (yyval.attr).val = (yyvsp[(2) - (2)].num_val)*-1;
         // $$.type = 3;
@@ -1912,7 +1926,7 @@ yyreduce:
 
   case 53:
 /* Line 1792 of yacc.c  */
-#line 362 "mini_l.y"
+#line 376 "mini_l.y"
     {
         (yyval.attr).val = (yyvsp[(1) - (1)].num_val);
         // $$.type = 3;
@@ -1927,7 +1941,7 @@ yyreduce:
 
   case 55:
 /* Line 1792 of yacc.c  */
-#line 373 "mini_l.y"
+#line 387 "mini_l.y"
     {
         strcpy((yyval.attr).name, (yyvsp[(2) - (3)].attr).name);
     }
@@ -1935,7 +1949,7 @@ yyreduce:
 
   case 60:
 /* Line 1792 of yacc.c  */
-#line 393 "mini_l.y"
+#line 407 "mini_l.y"
     {
        //check_symbol($1);
        //if($1.type == 1) {
@@ -1951,7 +1965,7 @@ yyreduce:
 
   case 61:
 /* Line 1792 of yacc.c  */
-#line 404 "mini_l.y"
+#line 418 "mini_l.y"
     {
        //check_symbol($1);
        //if($1.type == 0) {
@@ -1982,7 +1996,7 @@ yyreduce:
 
 
 /* Line 1792 of yacc.c  */
-#line 1986 "y.tab.c"
+#line 2000 "y.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2214,7 +2228,7 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 433 "mini_l.y"
+#line 447 "mini_l.y"
 
 
 int main (int argc, char **argv) {
