@@ -54,13 +54,16 @@
 
   stack<string> prog_name;
   stack < map < string, Sym > > symbol_table_stack;
-  stack<string> ident_stack;
-  stack<string> var_stack;
-  stack<string> comp_stack;
+  stack<string> ident_stack; // using
+  stack<string> var_stack; // using
+  stack<string> exp_stack; // using
+  stack<string> param_stack; //using
+  stack<string> label_stack; //using
+  stack<string> comp_stack; 
   stack<string> index_stack;
   stack<string> reverse_stack;
   stack<int> size_stack;
-  stack<int> label_stack;
+  //stack<int> label_stack;
   stack<int> loop_stack;
   stack<int> predicate_stack;
 
@@ -72,7 +75,7 @@
   bool find_symbol(string name);
   void print_declarations();
   string make_temp();
-  string make_temp();
+  string make_label();
   char* make_temp2();
   map<string, Sym> symbol_table;
   map<string, func> func_table;
@@ -81,6 +84,7 @@
 
   int temp_cnt = 0;
   int label_cnt = 0;
+  int param_cnt = 0;
   
 %}
 
@@ -138,10 +142,17 @@ program:
        | function program 
        ;
 
-function: FUNCTION IDENT {milhouse << "func " << string($2) << endl;} SEMICOLON BEGIN_PARAMS declaration_block END_PARAMS  BEGIN_LOCALS declaration_block END_LOCALS BEGIN_BODY statement SEMICOLON statement_block END_BODY {
+function: FUNCTION IDENT {milhouse << "func " << string($2) << endl;} SEMICOLON BEGIN_PARAMS 
+          declaration_block { 
+            while (!param_stack.empty()){
+              milhouse << "= " << param_stack.top() << ", " << "$" << param_cnt++ << endl;
+              param_stack.pop();
+            }
+          } 
+          END_PARAMS  BEGIN_LOCALS declaration_block END_LOCALS BEGIN_BODY statement SEMICOLON statement_block END_BODY {
             milhouse << "endfunc\n";
             symbol_table.clear();
-        }
+          }
         ;
 
 declaration_block:  
@@ -151,8 +162,10 @@ declaration_block:
 statement_block: 
                | statement SEMICOLON statement_block 
                ;
+
 declaration: IDENT comma_ident COLON INTEGER {
                ident_stack.push($1);
+               param_stack.push($1);
                while(!ident_stack.empty()) {
                  string temp = ident_stack.top();
                  Sym sym(0,0,temp,INT); 
@@ -163,6 +176,7 @@ declaration: IDENT comma_ident COLON INTEGER {
              }
            | IDENT comma_ident COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {
                ident_stack.push($1);
+               param_stack.push($1);
                while(!ident_stack.empty()) {
                  string temp = ident_stack.top();
                  Sym sym(0,$6,temp,INTARRAY);
@@ -178,11 +192,12 @@ comma_ident:
                //Sym sym(0,0,$2,INT);
                //add_symbol(sym);
                ident_stack.push($2);
+               param_stack.push($2);
              }
            ;
 
 statement: var ASSIGN expression {
-             string a, b, c;
+             //string a, b, c;
              //check_symbol($1.name);
              if ($1.type == 0) { //Check if var is an int
                //if ($3.type == 0) { //Check if expression is an int   
@@ -209,8 +224,17 @@ statement: var ASSIGN expression {
             
              } 
            }
-         | IF bool_expr THEN statement SEMICOLON statement_block else_block ENDIF {
-
+         | IF bool_expr THEN {
+             string start = make_label();
+             string endif = make_label();
+             label_stack.push(endif); 
+             milhouse << "?:= " << start << ", " << const_cast<char*>($2.name) << endl;
+             milhouse << ":= " << endif << endl;
+             milhouse << ": " << start << endl;
+           } 
+           statement SEMICOLON statement_block else_block ENDIF {
+             milhouse << ": " << label_stack.top() << endl;
+             label_stack.pop();
            }
          | WHILE bool_expr BEGINLOOP statement SEMICOLON statement_block ENDLOOP {
 
@@ -245,16 +269,28 @@ statement: var ASSIGN expression {
                 }
             }
          }
-         | CONTINUE 
+         | CONTINUE {
+             //string label = make_label(); 
+             milhouse << ":= " << label_stack.top() << endl;
+             //milhouse << ": " << label_stack.top() << endl;
+             //label_stack.pop();
+             //label_stack.push(label);
+         }
          | RETURN expression {
              $$.val = $2.val;
              strcpy($$.name,$2.name);
+             milhouse << "ret " << const_cast<char*>($2.name) << endl;
           }
          ;
 
 else_block: 
-          | ELSE statement SEMICOLON statement_block 
-          // need to finish shit
+          | ELSE {
+              string label = make_label(); 
+              milhouse << ":= " << label << endl;
+              milhouse << ": " << label_stack.top() << endl;
+              label_stack.pop();
+              label_stack.push(label);
+          } statement SEMICOLON statement_block           // need to finish shit
           ;
 
 var_block:  
@@ -268,7 +304,7 @@ bool_expr: bool_expr OR relation_and_expr {
              string temp = make_temp();
              strcpy($$.name, temp.c_str());
              milhouse << ". " << temp << endl;
-             milhouse << "|| " << const_cast<char*>($1.name) << " " << temp << const_cast<char*>($3.name) << endl;
+             milhouse << "|| " << temp << ", " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.name) << endl;
            }
          | relation_and_expr {
              strcpy($$.name, $1.name);
@@ -279,7 +315,7 @@ relation_and_expr: relation_and_expr AND relation_expr {
                     string temp = make_temp();
                     strcpy($$.name, temp.c_str());
                     milhouse << ". " << temp << endl;
-                    milhouse << "&& " << const_cast<char*>($1.name) << " " << temp << const_cast<char*>($3.name) << endl;
+                    milhouse << "&& " << temp << ", " << const_cast<char*>($1.name) << ", " <<  const_cast<char*>($3.name) << endl;
                    }
                  | relation_expr {
                        strcpy($$.name, $1.name);
@@ -300,7 +336,7 @@ rel_expr: expression comp expression {
           string temp = make_temp();
           strcpy($$.name, temp.c_str());
           milhouse << ". " << temp << endl;
-          milhouse << $2 << " " << const_cast<char*>($1.name) << " " << temp << const_cast<char*>($3.name) << endl;
+          milhouse << $2 << " " << temp << ", " << const_cast<char*>($1.name) << ", " << const_cast<char*>($3.name) << endl;
             }
         | TRUE 
         | FALSE 
@@ -410,17 +446,41 @@ term: SUB var {
         milhouse << ". " << const_cast<char*>($$.name) << endl;
         milhouse << "= " << const_cast<char*>($$.name) <<  ", " << $$.val << endl;
       }
-    | SUB L_PAREN expression R_PAREN
+     | SUB L_PAREN expression R_PAREN {
+       /* later */ 
+      }
     | L_PAREN expression R_PAREN {
         strcpy($$.name, $2.name);
     }
-    | IDENT L_PAREN exp_comma_block R_PAREN
-    | IDENT L_PAREN R_PAREN
+    | IDENT L_PAREN expression exp_comma_block R_PAREN {
+        exp_stack.push($3.name); 
+        while (!exp_stack.empty()){
+          milhouse << "param " << exp_stack.top() << endl;
+          exp_stack.pop();
+        }
+        string temp = make_temp();
+        milhouse << ". " << temp << endl;
+        milhouse << "call " << const_cast<char*>($1) << ", " << temp << endl;
+        strcpy($$.name,temp.c_str());
+      }
+    | IDENT L_PAREN R_PAREN {
+        string temp = make_temp();
+        milhouse << ". " << temp << endl;
+        milhouse << "call " << const_cast<char*>($1) << ", " << temp << endl;
+        strcpy($$.name,temp.c_str());
+      }
     ;
 
+exp_comma_block: COMMA expression exp_comma_block {
+                   exp_stack.push($2.name); 
+                 }
+               |
+               ;
+/*
 exp_comma_block: expression
                | expression COMMA exp_comma_block
                ;
+*/
 /*
 exp_comma_block: expression exp_comma_block2 
                |  

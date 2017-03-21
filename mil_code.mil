@@ -1,41 +1,27 @@
 func main
 . i
+. n
 . x
-.[] j, 4
-.[] k, 4
 . __temp__0
-= __temp__0, 2
+= __temp__0, 1
 = i, __temp__0
 . __temp__1
-= __temp__1, i
-= x, __temp__1
-.> x
+= __temp__1, 3
+= n, __temp__1
 . __temp__2
-= __temp__2, 0
+= __temp__2, 4
+= x, __temp__2
 . __temp__3
-= __temp__3, x
-[]= k, __temp__2, __temp__3
+= __temp__3, i
 . __temp__4
-= __temp__4, 0
-.[]> k, __temp__4
+= __temp__4, n
 . __temp__5
-= __temp__5, 0
-. __temp__6
-=[] __temp__6, k, __temp__5
-= i, __temp__6
+< __temp__5, __temp__3, __temp__4
+?:= __label__0, __temp__5
+:= __label__1
+: __label__0
+:= __label__1
 .> i
-. __temp__7
-= __temp__7, 1
-. __temp__8
-= __temp__8, 0
-. __temp__9
-=[] __temp__9, k, __temp__8
-. __temp__10
-= __temp__10, 1
-. __temp__11
-+ __temp__11, __temp__9, __temp__10
-[]= j, __temp__7, __temp__11
-. __temp__12
-= __temp__12, 1
-.[]> j, __temp__12
+: __label__1
+.> x
 endfunc

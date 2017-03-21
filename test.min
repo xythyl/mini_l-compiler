@@ -3,27 +3,21 @@ beginparams
 endparams
 
 beginlocals
-
 i: integer;
+n: integer;
 x: integer;
-j, k: array[4] of integer;
-
 endlocals
 
 beginbody
+  i:=1;
+  n:=3;
+  x:=4;
 
-  i := 2;
-  x := i;
+  if i < n then
+    continue;
+    write i;
+  endif;
 
   write x;
-
-  k[0] := x;
-  write k[0];
-
-  i := k[0];
-  write i;
-
-  j[1] := k[0] + 1;
-  write j[1];
 
 endbody
