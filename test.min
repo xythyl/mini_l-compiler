@@ -16,12 +16,14 @@ endparams
 beginlocals
 x: integer;
 k: integer;
+q: array[2] of integer;
 endlocals
 beginbody
 
 x := 2;
+q[1] := 3;
 
-k := -(x + 1 - (-2));
+k := -(x + 1 - (-q[1]));
 write k;
 
 endbody
